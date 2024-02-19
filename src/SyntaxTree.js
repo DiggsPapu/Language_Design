@@ -2,13 +2,39 @@
 // 2. construir el arbol con shunting yard
 // 3. ponerle numeros a las hojas (excepto a epsilon)
 // 4. construir las funciones sobre el arbol
+// Refs: https://www.geeksforgeeks.org/regular-expression-to-dfa/
+//       https://www.youtube.com/watch?v=leENeyk1T5M
+
+import { minimizeDFA } from "./DFA";
+import { NFA } from "./NFA";
 
 export class SyntaxTree {
-  constructor(tree, nodesList, regex) {
-    this.tree = tree;
-    this.nodesList = nodesList;
+  constructor(treeRoot, nodes, regex) {
+    this.treeRoot = treeRoot;
+    this.nodes = nodes;
     this.regex = regex;
+    this.tokens = [("return ID", "ID")];
   }
+
+  /**
+   *
+   * @param {*} set1
+   * @param {*} set2
+   * @returns un nuevo set con la union de dos conjuntos para poder calcular las funciones del arbol
+   */
+  union = (set1, set2) => {
+    return new Set([...set1, ...set2]);
+  };
+
+  /**
+   *
+   * @param {*} set1
+   * @param {*} set2
+   * @returns new Set() con la interseccion de dos conjuntos para poder calcular las funciones del arbol
+   */
+  intersection = (set1, set2) => {
+    return new Set([...set1].filter((x) => set2.has(x)));
+  };
 
   /**
    *
@@ -27,12 +53,16 @@ export class SyntaxTree {
     } else {
       // ahora hay que ver cada caso y ejecutar recursivamente las operaciones respecto a las reglas
       if (n.value === "*" || n.value === "?") {
+        // definitivamente es anulable
         return true;
       } else if (n.value === "+") {
+        // se le pasa a su nodo hijo
         return this.nullable(n.left);
       } else if (n.value === ".") {
+        // se verifica la verdad en ambos casos
         return this.nullable(n.left) && this.nullable(n.right);
       } else if (n.value === "|") {
+        // con que uno de los dos sea verdadero este nodo sera anulable
         return this.nullable(n.left) || this.nullable(n.right);
       }
     }
@@ -59,12 +89,14 @@ export class SyntaxTree {
         return this.firstpos(n.left);
       } else if (n.value === ".") {
         if (this.nullable(n.left)) {
-          return this.firstpos(n.left).union(this.firstpos(n.right));
+          // hacer A U B para el nodo
+          return this.union(this.firstpos(n.left), this.firstpos(n.right)); //this.firstpos(n.left).union(this.firstpos(n.right));
         } else {
           return this.firstpos(n.left);
         }
       } else if (n.value === "|") {
-        return this.firstpos(n.left).union(this.firstpos(n.right));
+        // hacer A U B para el nodo
+        return this.union(this.firstpos(n.left), this.firstpos(n.right)); // igual q arriba
       }
     }
   }
@@ -90,12 +122,15 @@ export class SyntaxTree {
         return this.lastpos(n.left);
       } else if (n.value === ".") {
         if (this.nullable(n.right)) {
-          return this.lastpos(n.left).union(this.lastpos(n.right));
+          // retornar la union de conjuntos de los nodos hijos
+          return this.union(this.lastpos(n.left), this.lastpos(n.right)); // this.lastpos(n.left).union(this.lastpos(n.right));
         } else {
           return this.lastpos(n.right);
         }
       } else if (n.value === "|") {
-        return this.lastpos(n.left).union(this.lastpos(n.right));
+        // retornar la union de conjuntos de los hijos
+
+        return this.union(this.lastpos(n.left), this.lastpos(n.right));
       }
     }
   }
@@ -111,17 +146,19 @@ export class SyntaxTree {
     if (n.left === null && n.right === null) {
       return new Set();
     } else {
-      // si se llega a un operador...
+      // si se llega a un star-node
       if (n.value === "*" || n.value === "+") {
-        let first = this.lastpos(n);
+        let i = this.lastpos(n);
         // unir los subconjuntos para cada estado
-        for (const state of first) {
-          state.followpos.union(this.firstpos(n));
+        for (const state of i) {
+          state.followpos = this.union(state.followpos, this.firstpos(n)); // ojo aqui
+          // state.followpos.union(this.firstpos(n));
         }
       } else if (n.value === ".") {
-        let first = this.lastpos(n.left);
-        for (const state of first) {
-          state.followpos.union(n.right);
+        let i = this.lastpos(n.left);
+        for (const state of i) {
+          state.followpos = this.union(state.followpos, this.firstpos(n.right));
+          //state.followpos.union(n.right);
         }
       } else {
         return new Set();
@@ -129,5 +166,18 @@ export class SyntaxTree {
     }
   }
 
-  direct() {}
+  generateDirectDFA(augmented) {
+    const tokens = this.tokens;
+    // hacer el calculo de las funciones para cada nodo del arbol
+    this.nodes.forEach((node) => {
+      node.nullable = this.nullable(node);
+      node.firstpos = this.firstpos(node);
+      node.lastpos = this.lastpos(node);
+      node.followpos = this.followpos(node);
+    });
+    console.log(this.nodes);
+    console.log(this.treeRoot);
+
+    // se necesita lo siguiente para armar el DFA
+  }
 }

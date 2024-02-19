@@ -12,6 +12,7 @@ import {
   fixLabels,
   drawGraphDFA,
   drawGraph,
+  drawTree,
 } from "./drawFunctions";
 import * as trial from "./Trial";
 import { SyntaxTree } from "./SyntaxTree";
@@ -25,6 +26,10 @@ function App() {
   const [outputNfaS, setOutputNFAS] = useState("");
   const [outputDfaS, setOutputDFAS] = useState("");
   const [postfix, setPostfix] = useState("");
+  const [sintaxTree, setSintaxTree] = useState(null);
+  const [dotSintaxTree, setDotSintaxTree] = useState(
+    "digraph fsm {rankdir=LR;node [shape = point]; INITIAL_STATE;node [shape = doublecircle]; q1;node [shape = circle];INITIAL_STATE -> q0;q0 -> q1 [label=ε];}"
+  );
   const [dotNFA, setDotNFA] = useState(
     "digraph fsm {rankdir=LR;node [shape = point]; INITIAL_STATE;node [shape = doublecircle]; q1;node [shape = circle];INITIAL_STATE -> q0;q0 -> q1 [label=ε];}"
   );
@@ -50,12 +55,15 @@ function App() {
     setDotNFA(drawGraph(thompson.nfa));
     const tree = regex.constructTree();
     const ast = new SyntaxTree(tree[0], tree[1], regex);
-    console.log(ast.tree);
+    setDotSintaxTree(drawTree(ast));
+    ast.generateDirectDFA();
+    // console.log(ast.tree);
     const nfaToDfa = NFAToDFA(thompson.nfa);
-    console.log(nfaToDfa)
+    // console.log(nfaToDfa)
     const [dfaI, relations] = fixLabels(nfaToDfa);
     setDotDFA(drawGraphDFA(dfaI));
     const dfaMinimized = minimizeDFA(dfaI);
+
     console.log(dfaMinimized);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
     setNfa(thompson.nfa);
@@ -87,6 +95,8 @@ function App() {
       <h3 id="postfix" name="postfix">
         {postfix}
       </h3>
+      <h2>Sintax Tree:</h2>
+      <Graphviz dot={dotSintaxTree} />
 
       <h2>AFN:</h2>
       <Graphviz dot={dotNFA} />
