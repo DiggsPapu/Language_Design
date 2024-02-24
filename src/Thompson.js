@@ -12,7 +12,6 @@ export class Thompson {
     this.alphabet = this.getAlphabet(postfix);
     // nfa construido
     this.nfa = this.postfixToNFA();
-    console.log(this.nfa);
   }
 
   // para asignar un label a cada estado
@@ -297,7 +296,6 @@ export class Thompson {
           let new_tsx = []
           for (let j = 0; j < new_ts.length; j++){
             let substring = new_ts[j].substring(1)
-            console.log(substring)
             if (substring === "0"){
               new_tsx.push("q"+steps_moved);
             }
@@ -306,7 +304,6 @@ export class Thompson {
             };
           };
           new_transitions.set(new_t,new_tsx);
-          console.log(new_transitions);
         }
         else {
           let new_ts = node_toChangeTransitions[0][1];
@@ -348,7 +345,6 @@ export class Thompson {
           let new_tsx = []
           for (let j = 0; j < new_ts.length; j++){
             let substring = new_ts[j].substring(1)
-            console.log(substring)
             if (substring === "0"){
               new_tsx.push("q"+steps_moved);
             }
@@ -357,7 +353,6 @@ export class Thompson {
             };
           };
           new_transitions.set(new_t,new_tsx);
-          console.log(new_transitions);
         }
         else {
           let new_ts = node_toChangeTransitions[0][1];
@@ -391,10 +386,6 @@ export class Thompson {
       };
       transitions.set(nfa.states[k].label, nfa.states[k].transitions);
     };
-    console.log(states);
-    console.log(transitions);
-    console.log(q0);
-    console.log(qf);
     return new NFA(q0,qf,states,nfa.alphabet,transitions);
   }
 

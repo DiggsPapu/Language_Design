@@ -48,23 +48,24 @@ function App() {
 
   const handleClick = () => {
     const regex = new Regex(input);
+    console.log(regex)
     setPostfix(regex.postfix);
     // const syntaxTree = new SyntaxTree(postfix);
     
     const thompson = new Thompson(regex.postfix);
     setDotNFA(drawGraph(thompson.nfa));
     const tree = regex.constructTree();
-    const ast = new SyntaxTree(tree[0], tree[1], regex);
-    setDotSintaxTree(drawTree(ast));
+    console.log(tree[1])
+    const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
     ast.generateDirectDFA();
-    // console.log(ast.tree);
+    setDotSintaxTree(drawTree(ast));
+    console.log(ast.tree);
     const nfaToDfa = NFAToDFA(thompson.nfa);
     // console.log(nfaToDfa)
     const [dfaI, relations] = fixLabels(nfaToDfa);
     setDotDFA(drawGraphDFA(dfaI));
     const dfaMinimized = minimizeDFA(dfaI);
-
-    console.log(dfaMinimized);
+    // console.log(dfaMinimized);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
     setNfa(thompson.nfa);
     setDfa(dfaI);

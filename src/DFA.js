@@ -320,7 +320,6 @@ export const minimizeDFA = (dfa:NFA) => {
       piNew = [];
     };
   };
-  console.log(piGroups)
   let arrayOfStates = [];
   let transitions1 = new Map();
   let initialState = "";

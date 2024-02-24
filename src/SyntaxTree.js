@@ -7,13 +7,15 @@
 
 import { minimizeDFA } from "./DFA";
 import { NFA } from "./NFA";
+import { TreeNode } from "./TreeNode";
 
 export class SyntaxTree {
-  constructor(treeRoot, nodes, regex) {
+  constructor(treeRoot, nodes, regex, maxpos) {
     this.treeRoot = treeRoot;
     this.nodes = nodes;
     this.regex = regex;
     this.tokens = [("return ID", "ID")];
+    this.maxpos = maxpos;
   }
 
   /**
@@ -165,9 +167,26 @@ export class SyntaxTree {
       }
     }
   }
-
+  
   generateDirectDFA(augmented) {
     const tokens = this.tokens;
+    // Aniadir un # al final
+    let lastNode = this.nodes[this.nodes.length - 1];
+    if (lastNode.right===null){
+      this.maxpos++
+      let newFinishNode = new TreeNode("#",null,null,this.maxpos);
+      this.nodes.push(newFinishNode);
+      lastNode.right=newFinishNode;
+      this.treeRoot.right = newFinishNode;
+    }
+    else{
+      this.maxpos++
+      let newFinishNode = new TreeNode("#",null,null,this.maxpos);
+      let newDotNode = new TreeNode(".",this.treeRoot,newFinishNode,null);
+      this.nodes.push(newFinishNode);
+      this.nodes.push(newDotNode);
+      this.treeRoot = newDotNode;
+    }
     // hacer el calculo de las funciones para cada nodo del arbol
     this.nodes.forEach((node) => {
       node.nullable = this.nullable(node);

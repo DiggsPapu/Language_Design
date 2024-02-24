@@ -238,6 +238,6 @@ export class Regex {
         pos += 1;
       }
     }
-    return [nodeStack.pop(), nodeArray];
+    return [nodeStack.pop(), nodeArray, pos];
   }
 }
