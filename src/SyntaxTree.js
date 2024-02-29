@@ -189,11 +189,7 @@ export class SyntaxTree {
         }
       } else if (n.value === ".") {
         let i = n.left.lastpos;
-        console.log(i)
-        console.log(n.right.firstpos)
         for (const state of i) {
-          console.log(state.position)
-          console.log(this.union(state.followpos, n.right.firstpos));
           state.followpos = this.union(state.followpos, n.right.firstpos);
           //state.followpos.union(n.right);
         }
@@ -251,22 +247,16 @@ export class SyntaxTree {
       node.lastpos = this.lastpos(node);
       node.followpos = this.followpos(node);
     });
-    console.log("TreeRoot")
     this.treeRoot.followpos = this.followpos(this.treeRoot);
-    console.log(this.nodes);
-    console.log(this.treeRoot);
     // Estados del dfa
     let dStates = [this.treeRoot.firstpos];
-    console.log(this.printArraySet(dStates));
     // All this will be one state.
     let unmarkedStates = [this.treeRoot.firstpos];
     let q0 = new State("q0", new Map());
     let dfaArray = [q0];
     let finalStates = [];
     let isFinal0 = false
-    console.log("hey");
     this.treeRoot.firstpos.forEach((state)=> {
-      console.log(state.value)
       if (state.value === "#"){
         isFinal0 = true;
       };
@@ -280,14 +270,12 @@ export class SyntaxTree {
         let U = new Set();
         let a_symbol = this.alphabet[i];
         S.forEach((state) => {  
-          console.log(state)
           if (state.value === a_symbol) {
             if (state.followpos.size>1){
               state.followpos.forEach((new_s) => U.add(new_s));
             }
             else {U.add(...state.followpos);}
           };
-          console.log("U set->"+this.alphabet[i]+": \n"+this.printSet(U));
         });
         let indexU = this.isInDStates(U, dStates);
         let indexS = dStates.indexOf(S);
@@ -311,15 +299,11 @@ export class SyntaxTree {
           dfaArray[indexS].transitions.set(a_symbol, `q${indexU}`);
         };
       };
-      console.log("Unmarked states:\n"+this.printArraySet(unmarkedStates));
-      console.log("dStates:\n"+this.printArraySet(dStates));
     };
     let transitions = new Map();
   for (let i=0; i < dfaArray.length ; i++) {
     transitions.set(dfaArray[i].label, dfaArray[i].transitions);
   };
-    console.log(dfaArray)
-    console.log(finalStates)
     return new NFA(q0,finalStates,dfaArray,this.alphabet,transitions);
   }
 }

@@ -56,7 +56,6 @@ function App() {
 
   const handleClick = () => {
     const regex = new Regex(input);
-    console.log(regex)
     setPostfix(regex.postfix);
     // const syntaxTree = new SyntaxTree(postfix);
     
@@ -65,13 +64,11 @@ function App() {
     const tree = regex.constructTree();
     const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
     const nfaToDfa = NFAToDFA(thompson.nfa);
-    // console.log(nfaToDfa)
     const [dfaI, relations] = fixLabels(nfaToDfa);
     setDotDFA(drawGraphDFA(dfaI));
     const directDfa = ast.generateDirectDFA()
     const dfaMinimized = minimizeDFA(dfaI);
     const directDFAMin = minimizeDFA(directDfa);
-    // console.log(dfaMinimized);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
     setNfa(thompson.nfa);
     setDfa(dfaI);
@@ -82,70 +79,81 @@ function App() {
     setDotDirDFAMin(drawGraphDFA(directDFAMin));
     setSintaxTree(ast);
     setDotSintaxTree(drawTree(ast));
-    console.log(ast)
   };
   
   const clickSimulate = () => {
     let startTime = performance.now();
-    nfa.simulate(checkInput)?setOutputNFAS("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputNFAS("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    nfa.simulate(checkInput)?setOutputNFAS("Yes, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds"):setOutputNFAS("No, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds");
     startTime = performance.now();
-    dfa.simulate(checkInput)?setOutputDFAS("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFAS("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    dfa.simulate(checkInput)?setOutputDFAS("Yes, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds"):setOutputDFAS("No, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds");
     startTime = performance.now();
-    dfaMin.simulate(checkInput)?setOutputDFAmin("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFAmin("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    dfaMin.simulate(checkInput)?setOutputDFAmin("Yes, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds"):setOutputDFAmin("No, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds");
     startTime = performance.now();
-    directDfa.simulate(checkInput)?setOutputDFAD("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFAD("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    directDfa.simulate(checkInput)?setOutputDFAD("Yes, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds"):setOutputDFAD("No, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds");
     startTime = performance.now();
-    directDfaMin.simulate(checkInput)?setOutputDFADmin("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFADmin("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    directDfaMin.simulate(checkInput)?setOutputDFADmin("Yes, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds"):setOutputDFADmin("No, time: "+(-startTime+performance.now()).toFixed(30).toString()+" seconds");
   };
 
   return (
     <div className="App">
       <h1>Lab AB</h1>
-
-      <input
-        type="text"
-        placeholder="ingrese una regex"
-        id="regex-input"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-      <button onClick={handleClick}>Aceptar</button>
-
-      <h2>Postfix:</h2>
-      <h3 id="postfix" name="postfix">
-        {postfix}
-      </h3>
-      <h2>Syntax Tree:</h2>
-      <Graphviz dot={dotSintaxTree} />
-
-      <h2>NFA:</h2>
-      <Graphviz dot={dotNFA} />
-
-      <h2>DFA:</h2>
-      <Graphviz dot={dotDFA} />
-
-      <h2>Min DFA:</h2>
-      <Graphviz dot={dotMinDFA} />
-      <h2>DIRECT DFA:</h2>
-      <Graphviz dot={dotDirDFA} />
-      <h2>Min DIRECT DFA:</h2>
-      <Graphviz dot={dotDirDFAMin} />
-
-      <h2>Simulations</h2>
-      <input
-        type="text"
-        placeholder="ingrese una cadena para la simulacion"
-        id="validar"
-        value={checkInput}
-        onChange={(e) => setCheckInput(e.target.value)}
-      />
-      <button id="enter2" onClick={clickSimulate}>aceptar</button>
-      <h3>NFA:{outputNfaS}</h3>
-      <h3>DFA:{outputDfaS}</h3>
-      <h3>Min DFA:{outputDfamin}</h3>
-      <h3>DIRECT DFA:{outputDfaD}</h3>
-      <h3>Min DIRECT DFA:{outputDfaDmin}</h3>
-
+      <div className="grid-container">
+        <div className="graph-container">
+          <h2>Enter a regex:</h2>
+          <input
+          type="text"
+          placeholder="ingrese una regex"
+          id="regex-input"
+          value={input}
+          onChange={(e) => setInput(e.target.value)} />
+          <button onClick={handleClick}>Accept</button>
+        </div>
+        <div className="graph-container">
+          <h2>Postfix:</h2>
+          <h3 id="postfix" name="postfix">
+            {postfix}
+          </h3>
+        </div>
+        <div className="graph-container">
+          <h2>Enter a simulate chain:</h2>
+          <input
+          type="text"
+          placeholder="ingrese una cadena para la simulacion"
+          id="validar"
+          value={checkInput}
+          onChange={(e) => setCheckInput(e.target.value)} />
+          <button id="enter2" onClick={clickSimulate}>aceptar</button>
+        </div>
+        <div className="graph-container">
+          <h2>NFA:</h2>
+          <Graphviz dot={dotNFA} />
+          <p>Simulation:{outputNfaS}</p>
+        </div>
+        <div className="graph-container">
+          <h2>DFA:</h2>
+          <Graphviz dot={dotDFA} />
+          <p>Simulate:{outputDfaS}</p>
+        </div>
+        <div className="graph-container">
+          <h2>Min DFA:</h2>
+          <Graphviz dot={dotMinDFA} />
+          <p>Simulate:{outputDfamin}</p>
+        </div>
+        <div className="graph-container">
+          <h2>Syntax Tree:</h2>
+          <Graphviz dot={dotSintaxTree} />
+          </div>
+        <div className="graph-container">
+          <h2>DIRECT DFA:</h2>
+          <Graphviz dot={dotDirDFA} />
+          <p>Simulate:{outputDfaD}</p>
+        </div>
+        <div className="graph-container">
+          <h2>Min DIRECT DFA:</h2>
+          <Graphviz dot={dotDirDFAMin} />
+          <p>Simulate:{outputDfaDmin}</p>
+        </div>
+      </div>
       {/* <hr />
       <h1>Lab 3</h1>
 
