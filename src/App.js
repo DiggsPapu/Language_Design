@@ -97,6 +97,7 @@ function App() {
   return (
     <div className="App">
       <h1>Lab AB</h1>
+      <h4>Diego Andrés Alonzo Medinilla 20172</h4>
       <div className="grid-container">
         <div className="graph-container">
           <h2>Enter a regex:</h2>
