@@ -23,9 +23,13 @@ function App() {
   const [nfa, setNfa] = useState(null);
   const [dfa, setDfa] = useState(null);
   const [directDfa, setDirectDfa] = useState(null);
+  const [directDfaMin, setDirectDfaMin] = useState(null);
   const [dfaMin, setDfaMinimized] = useState(null);
   const [outputNfaS, setOutputNFAS] = useState("");
   const [outputDfaS, setOutputDFAS] = useState("");
+  const [outputDfamin, setOutputDFAmin] = useState("");
+  const [outputDfaD, setOutputDFAD] = useState("");
+  const [outputDfaDmin, setOutputDFADmin] = useState("");
   const [postfix, setPostfix] = useState("");
   const [sintaxTree, setSintaxTree] = useState(null);
   const [dotSintaxTree, setDotSintaxTree] = useState(
@@ -66,14 +70,16 @@ function App() {
     setDotDFA(drawGraphDFA(dfaI));
     const directDfa = ast.generateDirectDFA()
     const dfaMinimized = minimizeDFA(dfaI);
+    const directDFAMin = minimizeDFA(directDfa);
     // console.log(dfaMinimized);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
     setNfa(thompson.nfa);
     setDfa(dfaI);
     setDfaMinimized(dfaMinimized);
     setDirectDfa(directDfa);
+    setDirectDfaMin(directDFAMin);
     setDotDirDFA(drawGraphDFA(directDfa));
-    setDotDirDFAMin(drawGraphDFA(minimizeDFA(directDfa)));
+    setDotDirDFAMin(drawGraphDFA(directDFAMin));
     setSintaxTree(ast);
     setDotSintaxTree(drawTree(ast));
     console.log(ast)
@@ -84,6 +90,12 @@ function App() {
     nfa.simulate(checkInput)?setOutputNFAS("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputNFAS("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
     startTime = performance.now();
     dfa.simulate(checkInput)?setOutputDFAS("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFAS("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    startTime = performance.now();
+    dfaMin.simulate(checkInput)?setOutputDFAmin("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFAmin("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    startTime = performance.now();
+    directDfa.simulate(checkInput)?setOutputDFAD("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFAD("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
+    startTime = performance.now();
+    directDfaMin.simulate(checkInput)?setOutputDFADmin("Si, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos"):setOutputDFADmin("No, se tardo: "+(-startTime+performance.now()).toFixed(30).toString()+" segundos");
   };
 
   return (
@@ -103,25 +115,23 @@ function App() {
       <h3 id="postfix" name="postfix">
         {postfix}
       </h3>
-      <h2>Sintax Tree:</h2>
+      <h2>Syntax Tree:</h2>
       <Graphviz dot={dotSintaxTree} />
 
-      <h2>AFN:</h2>
+      <h2>NFA:</h2>
       <Graphviz dot={dotNFA} />
 
-      <h2>AFD generado a partir de AFN:</h2>
+      <h2>DFA:</h2>
       <Graphviz dot={dotDFA} />
 
-      <h2>AFD minimizado:</h2>
+      <h2>Min DFA:</h2>
       <Graphviz dot={dotMinDFA} />
-      <Graphviz dot={dotDirDFAMin} />
-
-      <h2>AFD directamente construido con regex:</h2>
+      <h2>DIRECT DFA:</h2>
       <Graphviz dot={dotDirDFA} />
-      <h2>AFD directamente construido con regex (minimizado):</h2>
+      <h2>Min DIRECT DFA:</h2>
       <Graphviz dot={dotDirDFAMin} />
 
-      <h2>Simulaciones</h2>
+      <h2>Simulations</h2>
       <input
         type="text"
         placeholder="ingrese una cadena para la simulacion"
@@ -130,10 +140,11 @@ function App() {
         onChange={(e) => setCheckInput(e.target.value)}
       />
       <button id="enter2" onClick={clickSimulate}>aceptar</button>
-      <h3>Simulacion AFN:</h3>
-      <h3 id="afn-simulado">{outputNfaS}</h3>
-      <h3>Simulacion AFD:</h3>
-      <h3 id="afd-simulado">{outputDfaS}</h3>
+      <h3>NFA:{outputNfaS}</h3>
+      <h3>DFA:{outputDfaS}</h3>
+      <h3>Min DFA:{outputDfamin}</h3>
+      <h3>DIRECT DFA:{outputDfaD}</h3>
+      <h3>Min DIRECT DFA:{outputDfaDmin}</h3>
 
       {/* <hr />
       <h1>Lab 3</h1>
