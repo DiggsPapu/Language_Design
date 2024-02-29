@@ -22,6 +22,7 @@ function App() {
   const [checkInput, setCheckInput] = useState("");
   const [nfa, setNfa] = useState(null);
   const [dfa, setDfa] = useState(null);
+  const [directDfa, setDirectDfa] = useState(null);
   const [dfaMin, setDfaMinimized] = useState(null);
   const [outputNfaS, setOutputNFAS] = useState("");
   const [outputDfaS, setOutputDFAS] = useState("");
@@ -57,7 +58,6 @@ function App() {
     const tree = regex.constructTree();
     console.log(tree[1])
     const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
-    ast.generateDirectDFA();
     setDotSintaxTree(drawTree(ast));
     console.log(ast.tree);
     const nfaToDfa = NFAToDFA(thompson.nfa);
@@ -70,6 +70,8 @@ function App() {
     setNfa(thompson.nfa);
     setDfa(dfaI);
     setDfaMinimized(dfaMinimized);
+    setDirectDfa(ast.generateDirectDFA());
+    setDotDirDFA(drawGraphDFA(ast.generateDirectDFA()));
   };
   
   const clickSimulate = () => {

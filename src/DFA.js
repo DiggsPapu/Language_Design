@@ -215,7 +215,7 @@ function sameGroup(state1, state2, alphabet, piGroups){
   // Si no salio antes es que no dio error
   return true;
 };
-function getNewTransitions(state:State, nfa:NFA){
+function getNewTransitions(state, nfa){
   let transitionsMap = new Map();
   for (let alphabetIndex = 0; alphabetIndex < nfa.alphabet.length; alphabetIndex++){
     let symbol = nfa.alphabet[alphabetIndex]
@@ -247,7 +247,7 @@ function printGroup(group, alphabet) {
   };
   return groupS;
 };
-export const minimizeDFA = (dfa:NFA) => {
+export const minimizeDFA = (dfa) => {
   const nonFinalStates = [...dfa.states.filter((state) => dfa.finalState.find((state1)=>state1.label===state.label)===undefined)];
   const finalStates = [...dfa.finalState];
   let piGroups = [nonFinalStates, finalStates];

@@ -7,6 +7,7 @@
 
 import { minimizeDFA } from "./DFA";
 import { NFA } from "./NFA";
+import { State } from "./State";
 import { TreeNode } from "./TreeNode";
 
 export class SyntaxTree {
@@ -16,8 +17,38 @@ export class SyntaxTree {
     this.regex = regex;
     this.tokens = [("return ID", "ID")];
     this.maxpos = maxpos;
+    this.alphabet = null;
+    this.getAlphabet()
   }
-
+  printSet(set:Set){
+    let string = "";
+    for (let element of set) {
+      string+=" "+element.value+" position: "+element.position+"\n"
+    }
+    return string;
+  }
+  printArraySet(sets){
+    let string = "";
+    for (let i = 0; i<sets.length; i++){
+      string+="set"+i+":\n"+this.printSet(sets[i]) + "\n";
+    }
+    return string;
+  }
+  // Obtener el alfabeto
+  getAlphabet() {
+    this.alphabet = [];
+    // recorrer la postfix
+    for (let i = 0; i < this.regex.regex.length; i++) {
+      const l = this.regex.regex[i];
+      // si es un simbolo, no es una letra del alfabeto
+      if (!["|", ".", "?", "*", "+","ε",")","("].includes(l)) {
+        // si no se ha agregado a la lista, se agrega la letra
+        if (!this.alphabet.includes(l)) {
+          this.alphabet.push(l);
+        }
+      }
+    }
+  };
   /**
    *
    * @param {*} set1
@@ -167,20 +198,50 @@ export class SyntaxTree {
       }
     }
   }
-  
+  isInDStates(set, dStates){
+    if (set.size === 0 ) return -2;
+    for (let k = 0; k < dStates.length; k++) {
+      let set_1 = dStates[k];
+      if (set.size === set_1.size){
+        let positions = [];
+        let positions2 = [];
+        for (let node of  set_1) {
+          positions.push(node.position);
+        }
+        for (let node of set){
+          positions2.push(node.position);
+        }
+        let sortedArray1 = [...positions].sort(function(a, b) {
+            return a - b;
+        });
+        let sortedArray2 = [...positions2].sort(function(a, b) {
+          return a - b;
+        });
+        let isSame = true;
+        for (let i = 0; i < sortedArray1.length; i++){
+          if (sortedArray1[i]!== sortedArray2[i]){
+            isSame = false
+            break;
+          };
+        };
+        if (isSame){
+          return k;
+        }
+      };      
+    };
+    return -1;
+  };
   generateDirectDFA(augmented) {
     const tokens = this.tokens;
     // Aniadir un # al final
     let lastNode = this.nodes[this.nodes.length - 1];
     if (lastNode.right===null){
-      this.maxpos++
       let newFinishNode = new TreeNode("#",null,null,this.maxpos);
       this.nodes.push(newFinishNode);
       lastNode.right=newFinishNode;
       this.treeRoot.right = newFinishNode;
     }
     else{
-      this.maxpos++
       let newFinishNode = new TreeNode("#",null,null,this.maxpos);
       let newDotNode = new TreeNode(".",this.treeRoot,newFinishNode,null);
       this.nodes.push(newFinishNode);
@@ -196,7 +257,62 @@ export class SyntaxTree {
     });
     console.log(this.nodes);
     console.log(this.treeRoot);
-
-    // se necesita lo siguiente para armar el DFA
+    // Estados del dfa
+    let dStates = [this.treeRoot.firstpos];
+    console.log(this.printArraySet(dStates));
+    // All this will be one state.
+    let unmarkedStates = [this.treeRoot.firstpos];
+    let q0 = new State("q0", new Map());
+    let dfaArray = [q0];
+    let finalStates = [];
+    let counter = 0
+    while (unmarkedStates.length>0 && counter<10){
+      let S = unmarkedStates.pop();
+      for (let i = 0; i<this.alphabet.length; i++){
+        let U = new Set();
+        let a_symbol = this.alphabet[i];
+        S.forEach((state) => {  
+          console.log(state)
+          if (state.value === a_symbol) {
+            if (state.followpos.size>1){
+              state.followpos.forEach((new_s) => U.add(new_s));
+            }
+            else {U.add(...state.followpos);}
+          };
+          console.log("U set->"+this.alphabet[i]+": \n"+this.printSet(U));
+        });
+        let indexU = this.isInDStates(U, dStates);
+        let indexS = dStates.indexOf(S);
+        if (!(U.size===0)&&(indexU===-1)){
+          dStates.push(U);
+          unmarkedStates.push(U);
+          let newIndex = dfaArray.length
+          dfaArray.push(new State(`q${newIndex}`, new Map()));
+          dfaArray[indexS].transitions.set(a_symbol, `q${newIndex}`);
+          let isFinal = false
+          U.forEach((state)=> {
+            if (state.value === "#"){
+              isFinal = true;
+            };
+          });
+          if (isFinal){
+            finalStates.push(dfaArray[newIndex])
+          }
+        };
+        if (indexU>-1){
+          dfaArray[indexS].transitions.set(a_symbol, `q${indexU}`);
+        };
+        counter++;
+      };
+      console.log("Unmarked states:\n"+this.printArraySet(unmarkedStates));
+      console.log("dStates:\n"+this.printArraySet(dStates));
+    };
+    let transitions = new Map();
+  for (let i=0; i < dfaArray.length ; i++) {
+    transitions.set(dfaArray[i].label, dfaArray[i].transitions);
+  };
+    console.log(dfaArray)
+    console.log(finalStates)
+    return new NFA(q0,finalStates,dfaArray,this.alphabet,transitions);
   }
 }
