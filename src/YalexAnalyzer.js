@@ -1,44 +1,69 @@
-// readFile.js
+import { Token } from "./Token";
+export class YalexAnalyzer{
+    constructor(data){
+        this.regex = this.readFile(data);
+    };
+    // Use an async function to wait for the data
+    readFile(data) {
+            let commentaryToken = "";
+            let isCommentary = false;
+            let tokensSet = []
+            let newTokensSet = []
+            for (let line of data.split('\n')){
 
-const fs = require('fs');
-
-// Check if a file path is provided as a command-line argument
-if (process.argv.length < 3) {
-  console.error('Usage: node readFile.js <file_path>');
-  process.exit(1);
-}
-
-const filePath = process.argv[2];
-
-function readFileAsync(filePath) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(filePath, 'utf8', (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
-
-// Use an async function to wait for the data
-async function main() {
-  try {
-    const fileData = await readFileAsync(filePath);
-    console.log(`File content:\n${fileData}`);
-    console.log(typeof fileData);
-    for (let line of fileData.split('\n')){
-        console.log(`Line: ${line}`);
-        for (let i = 0; i < line.length; ++i){
-            let c = line[i];
-            console.log(c);
+                // let oldIsCommentary = isCommentary;
+                // [newTokensSet, isCommentary, commentaryToken] = this.processLines(line, isCommentary, commentaryToken);
+                // if (oldIsCommentary!==isCommentary){
+                //     [newTokensSet, isCommentary, commentaryToken] = this.processLines(line, isCommentary, commentaryToken);
+                // }
+                // newTokensSet.forEach(token => tokensSet.push(token));
+                // if (!isCommentary){
+                //     tokensSet.push(commentaryToken);
+                // }
+                console.log(`Line: ${line}`);
+                for (let i = 0; i < line.length; ++i){
+                    let c = line[i];
+                    let new_token = "";
+                    // Start commentary
+                    if (c === '(' && line[i+1] === '*'){
+                        while (i<line.length){
+                            new_token += line[i];
+                            if (line[i]===')' ){
+                                if (line[i-1]==='*' ){
+                                    i++
+                                    tokensSet.push(new Token(new_token, "COMMENTARY"));
+                                    break; 
+                                }
+                            }
+                            i++;
+                        }
+                    }
+                    
+                }
+            }
+            console.log(tokensSet);
         }
-    }
-  } catch (error) {
-    console.error(`Error reading file: ${error.message}`);
-  }
-}
-
-// Call the async function
-main();
+    processLines(line, isCommentary, commentaryToken){
+        let i = 0
+        if (isCommentary){
+            while (i<line.length && line[i]!==')' && line[i-1]!=='*'){
+                commentaryToken+=line[i]
+                console.log(commentaryToken)
+                i++;
+            }
+            // It gets out of the commentary type
+            if (line[i]!==')' && line[i-1]!=='*'){
+                isCommentary = false;
+            }
+        }
+        let tokensSet = []
+        for (i; i<line.length;i++){
+            let c = line[i]
+            if (c === '(' && line[i+1] === '*'){
+                isCommentary = true;
+                return [tokensSet, isCommentary, commentaryToken];
+            }
+        };
+        return [tokensSet, isCommentary, commentaryToken];
+    };
+};

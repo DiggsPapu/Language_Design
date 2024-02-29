@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Paper, Typography } from '@mui/material';
+import { YalexAnalyzer } from '../YalexAnalyzer';
 
 function FileDrop() {
   const [acceptedFiles, setAcceptedFiles] = useState([]);
@@ -34,6 +35,7 @@ function FileDrop() {
 
     setAcceptedFiles(filesWithContent);
     setCombinedContent(content);
+    let yalex = new YalexAnalyzer(content);
   };
 
   const { getRootProps, getInputProps } = useDropzone({
