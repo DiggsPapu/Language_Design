@@ -1,7 +1,6 @@
 - (a*|b*)c
 - (b|b)*abb(a|b)*
 - (a|ϵ)b(a+)c?
-- (a|ϵ)b(a+)c?
 - (a|b)*a(a|b)(a|b)
 - b*ab?
 - b+abc+

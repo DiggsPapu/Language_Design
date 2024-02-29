@@ -188,8 +188,12 @@ export class SyntaxTree {
           // state.followpos.union(this.firstpos(n));
         }
       } else if (n.value === ".") {
-        let i = this.lastpos(n.left);
+        let i = n.left.lastpos;
+        console.log(i)
+        console.log(n.right.firstpos)
         for (const state of i) {
+          console.log(state.position)
+          console.log(this.union(state.followpos, n.right.firstpos));
           state.followpos = this.union(state.followpos, n.right.firstpos);
           //state.followpos.union(n.right);
         }
@@ -235,19 +239,11 @@ export class SyntaxTree {
     const tokens = this.tokens;
     // Aniadir un # al final
     let lastNode = this.nodes[this.nodes.length - 1];
-    if (lastNode.right===null){
-      let newFinishNode = new TreeNode("#",null,null,this.maxpos);
-      this.nodes.push(newFinishNode);
-      lastNode.right=newFinishNode;
-      this.treeRoot.right = newFinishNode;
-    }
-    else{
-      let newFinishNode = new TreeNode("#",null,null,this.maxpos);
-      let newDotNode = new TreeNode(".",this.treeRoot,newFinishNode,null);
-      this.nodes.push(newFinishNode);
-      this.nodes.push(newDotNode);
-      this.treeRoot = newDotNode;
-    }
+    let newFinishNode = new TreeNode("#",null,null,this.maxpos);
+    let newDotNode = new TreeNode(".",this.treeRoot,newFinishNode,null);
+    this.nodes.push(newFinishNode);
+    this.nodes.push(newDotNode);
+    this.treeRoot = newDotNode;
     // hacer el calculo de las funciones para cada nodo del arbol
     this.nodes.forEach((node) => {
       node.nullable = this.nullable(node);
@@ -255,6 +251,8 @@ export class SyntaxTree {
       node.lastpos = this.lastpos(node);
       node.followpos = this.followpos(node);
     });
+    console.log("TreeRoot")
+    this.treeRoot.followpos = this.followpos(this.treeRoot);
     console.log(this.nodes);
     console.log(this.treeRoot);
     // Estados del dfa
@@ -265,6 +263,17 @@ export class SyntaxTree {
     let q0 = new State("q0", new Map());
     let dfaArray = [q0];
     let finalStates = [];
+    let isFinal0 = false
+    console.log("hey");
+    this.treeRoot.firstpos.forEach((state)=> {
+      console.log(state.value)
+      if (state.value === "#"){
+        isFinal0 = true;
+      };
+    });
+    if (isFinal0){
+      finalStates.push(q0);
+    }
     while (unmarkedStates.length>0){
       let S = unmarkedStates.pop();
       for (let i = 0; i<this.alphabet.length; i++){
