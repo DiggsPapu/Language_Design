@@ -18,3 +18,7 @@ Es el repositorio de diseño de lenguajes de programación, tiene el código de 
 - 0?(1|ε)?0*
 - ((1?)*)*
 - (01)*(10)*
+
+## Yalex
+Se ejecuta con:
+* node ./src/YalexAnalyzer.js ./yalexFiles/slr-1.yal
