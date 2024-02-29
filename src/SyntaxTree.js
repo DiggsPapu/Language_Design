@@ -190,7 +190,7 @@ export class SyntaxTree {
       } else if (n.value === ".") {
         let i = this.lastpos(n.left);
         for (const state of i) {
-          state.followpos = this.union(state.followpos, this.firstpos(n.right));
+          state.followpos = this.union(state.followpos, n.right.firstpos);
           //state.followpos.union(n.right);
         }
       } else {
@@ -265,8 +265,7 @@ export class SyntaxTree {
     let q0 = new State("q0", new Map());
     let dfaArray = [q0];
     let finalStates = [];
-    let counter = 0
-    while (unmarkedStates.length>0 && counter<10){
+    while (unmarkedStates.length>0){
       let S = unmarkedStates.pop();
       for (let i = 0; i<this.alphabet.length; i++){
         let U = new Set();
@@ -302,7 +301,6 @@ export class SyntaxTree {
         if (indexU>-1){
           dfaArray[indexS].transitions.set(a_symbol, `q${indexU}`);
         };
-        counter++;
       };
       console.log("Unmarked states:\n"+this.printArraySet(unmarkedStates));
       console.log("dStates:\n"+this.printArraySet(dStates));

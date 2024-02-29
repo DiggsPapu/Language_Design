@@ -24,13 +24,13 @@ export class Regex {
     if (this.valid) {
       this.regexWithDots = this.insertDotsInRegex();
       this.postfix = this.infixToPostfix(this.regexWithDots);
+
       this.augmented = this.regexWithDots + "#";
     } else {
       this.postfix = "";
       console.error("input incorrecto");
     }
   }
-
   // sirve para ver si un elemento es operador
   isOperator(element) {
     return ["|", ".", "?", "*", "+", "(", ")"].includes(element);

@@ -43,6 +43,9 @@ function App() {
   const [dotDirDFA, setDotDirDFA] = useState(
     "digraph fsm {rankdir=LR;node [shape = point]; INITIAL_STATE;node [shape = doublecircle]; q1;node [shape = circle];INITIAL_STATE -> q0;q0 -> q1 [label=ε];}"
   );
+  const [dotDirDFAMin, setDotDirDFAMin] = useState(
+    "digraph fsm {rankdir=LR;node [shape = point]; INITIAL_STATE;node [shape = doublecircle]; q1;node [shape = circle];INITIAL_STATE -> q0;q0 -> q1 [label=ε];}"
+  );
   const [dotLex, setDotLex] = useState(
     "digraph fsm {rankdir=LR;node [shape = point]; INITIAL_STATE;node [shape = doublecircle]; q1;node [shape = circle];INITIAL_STATE -> q0;q0 -> q1 [label=ε];}"
   );
@@ -56,22 +59,24 @@ function App() {
     const thompson = new Thompson(regex.postfix);
     setDotNFA(drawGraph(thompson.nfa));
     const tree = regex.constructTree();
-    console.log(tree[1])
     const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
-    setDotSintaxTree(drawTree(ast));
-    console.log(ast.tree);
     const nfaToDfa = NFAToDFA(thompson.nfa);
     // console.log(nfaToDfa)
     const [dfaI, relations] = fixLabels(nfaToDfa);
     setDotDFA(drawGraphDFA(dfaI));
+    const directDfa = ast.generateDirectDFA()
     const dfaMinimized = minimizeDFA(dfaI);
     // console.log(dfaMinimized);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
     setNfa(thompson.nfa);
     setDfa(dfaI);
     setDfaMinimized(dfaMinimized);
-    setDirectDfa(ast.generateDirectDFA());
-    setDotDirDFA(drawGraphDFA(ast.generateDirectDFA()));
+    setDirectDfa(directDfa);
+    setDotDirDFA(drawGraphDFA(directDfa));
+    setDotDirDFAMin(drawGraphDFA(minimizeDFA(directDfa)));
+    setSintaxTree(ast);
+    setDotSintaxTree(drawTree(ast));
+    console.log(ast)
   };
   
   const clickSimulate = () => {
@@ -109,9 +114,12 @@ function App() {
 
       <h2>AFD minimizado:</h2>
       <Graphviz dot={dotMinDFA} />
+      <Graphviz dot={dotDirDFAMin} />
 
       <h2>AFD directamente construido con regex:</h2>
       <Graphviz dot={dotDirDFA} />
+      <h2>AFD directamente construido con regex (minimizado):</h2>
+      <Graphviz dot={dotDirDFAMin} />
 
       <h2>Simulaciones</h2>
       <input
