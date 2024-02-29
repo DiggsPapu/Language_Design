@@ -16,6 +16,7 @@ import {
 } from "./drawFunctions";
 import * as trial from "./Trial";
 import { SyntaxTree } from "./SyntaxTree";
+import FileDrop from "./components/FileDrop";
 
 function App() {
   const [input, setInput] = useState("");
@@ -155,6 +156,7 @@ function App() {
           <p>Simulate:{outputDfaDmin}</p>
         </div>
       </div>
+      <FileDrop/>
       {/* <hr />
       <h1>Lab 3</h1>
 
