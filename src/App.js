@@ -14,6 +14,7 @@ import {
   drawGraphDFA,
   drawGraph,
   drawTree,
+  drawTreeTokens,
 } from "./drawFunctions";
 import * as trial from "./Trial";
 import { SyntaxTree } from "./SyntaxTree";
@@ -64,34 +65,34 @@ function App() {
     // const thompson = new Thompson(regex.postfix);
     console.log(regex.postfixTokenized)
     const thompson1 = new ThompsonToken(regex.postfixTokenized);
-    
-    console.log(thompson1)
     const tokenTree = regex.constructTokenTree();
-    console.log(thompson1.nfa)
-    console.log(drawGraph(thompson1.nfa))
     setDotNFA(drawGraph(thompson1.nfa));
-    // const tree = regex.constructTree();
-    // const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
+    const tree = regex.constructTree();
+    const ast1 = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
+    const ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
     const nfaToDfa = NFAToDFA(thompson1.nfa);
-    console.log(nfaToDfa)
-    // const [dfaI, relations] = fixLabels(nfaToDfa);
-    console.log(drawGraphDFA(nfaToDfa))
     setDotDFA(drawGraphDFA(nfaToDfa));
     const dfaMinimized = minimizeDFA(nfaToDfa);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
-    // const directDfa = ast.generateDirectDFA()
+    console.log(ast);
     
-    // const directDFAMin = minimizeDFA(directDfa);
+    setSintaxTree(ast);
+    setDotSintaxTree(drawTreeTokens(ast));
+    // ast1.generateDirectDFA("fjdksl")
+    ast.generateDirectDFATokens()
+    console.log(ast.regex);
+    const directDfa = ast.generateDirectDFATokens()
+    console.log(directDfa)
+    const directDFAMin = minimizeDFA(directDfa);
     
-    // setNfa(thompson1.nfa);
-    // setDfa(dfaI);
-    // setDfaMinimized(dfaMinimized);
-    // setDirectDfa(directDfa);
-    // setDirectDfaMin(directDFAMin);
-    // setDotDirDFA(drawGraphDFA(directDfa));
-    // setDotDirDFAMin(drawGraphDFA(directDFAMin));
-    // setSintaxTree(ast);
-    // setDotSintaxTree(drawTree(ast));
+    setNfa(thompson1.nfa);
+    setDfa(nfaToDfa);
+    setDfaMinimized(dfaMinimized);
+    setDirectDfa(directDfa);
+    setDirectDfaMin(directDFAMin);
+    setDotDirDFA(drawGraphDFA(directDfa));
+    setDotDirDFAMin(drawGraphDFA(directDFAMin));
+    setDotSintaxTree(drawTreeTokens(ast));
   };
   
   const clickSimulate = () => {

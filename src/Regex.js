@@ -365,12 +365,18 @@ export class Regex {
     // recorrer la postfix para ver que nodo va a construirse
     for (const c of this.postfixTokenized) {
       // es un operador unario
-      if (c.value === "*" || c.value === "+" || c.value === "?") {
+      // "|": 0,
+      // ".": 1,
+      // "?": 2,
+      // "*": 2,
+      // "+": 2,
+
+      if ((c.value === "*" && c.precedence === 2) || (c.value === "+" && c.precedence === 2) || (c.value === "?" && c.precedence === 2)) {
         // nodo unario
         const node = new TreeNode(c, nodeStack.pop(), null, null);
         nodeStack.push(node);
         nodeArray.push(node);
-      } else if (c.value === "." || c.value === "|") {
+      } else if ((c.value === "."  && c.precedence === 1)|| (c.value === "|" &&  c.precedence === 0)) {
         // nodo con operador binario
         const rightnode = nodeStack.pop();
         const leftnode = nodeStack.pop();
