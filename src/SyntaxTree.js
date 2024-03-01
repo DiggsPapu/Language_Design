@@ -20,7 +20,7 @@ export class SyntaxTree {
     this.alphabet = null;
     this.getAlphabet()
   }
-  printSet(set:Set){
+  printSet(set){
     let string = "";
     for (let element of set) {
       string+=" "+element.value+" position: "+element.position+"\n"

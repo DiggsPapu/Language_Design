@@ -2,6 +2,7 @@ import "./App.css";
 import React, { useState } from "react";
 import { Regex } from "./Regex";
 import { Thompson } from "./Thompson";
+import { ThompsonToken } from "./ThompsonToken";
 // import { SyntaxTree } from "./SyntaxTree";
 import { Graphviz } from "graphviz-react";
 import { generateDirectDFA, NFAToDFA, minimizeDFA, simulateNfa } from "./DFA";
@@ -56,30 +57,41 @@ function App() {
   );
 
   const handleClick = () => {
+    // console.log(input)
     const regex = new Regex(input);
     setPostfix(regex.postfix);
-    // const syntaxTree = new SyntaxTree(postfix);
     
-    const thompson = new Thompson(regex.postfix);
-    setDotNFA(drawGraph(thompson.nfa));
-    const tree = regex.constructTree();
-    const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
-    const nfaToDfa = NFAToDFA(thompson.nfa);
-    const [dfaI, relations] = fixLabels(nfaToDfa);
-    setDotDFA(drawGraphDFA(dfaI));
-    const directDfa = ast.generateDirectDFA()
-    const dfaMinimized = minimizeDFA(dfaI);
-    const directDFAMin = minimizeDFA(directDfa);
+    // const thompson = new Thompson(regex.postfix);
+    console.log(regex.postfixTokenized)
+    const thompson1 = new ThompsonToken(regex.postfixTokenized);
+    
+    console.log(thompson1)
+    const tokenTree = regex.constructTokenTree();
+    console.log(thompson1.nfa)
+    console.log(drawGraph(thompson1.nfa))
+    setDotNFA(drawGraph(thompson1.nfa));
+    // const tree = regex.constructTree();
+    // const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
+    const nfaToDfa = NFAToDFA(thompson1.nfa);
+    console.log(nfaToDfa)
+    // const [dfaI, relations] = fixLabels(nfaToDfa);
+    console.log(drawGraphDFA(nfaToDfa))
+    setDotDFA(drawGraphDFA(nfaToDfa));
+    const dfaMinimized = minimizeDFA(nfaToDfa);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
-    setNfa(thompson.nfa);
-    setDfa(dfaI);
-    setDfaMinimized(dfaMinimized);
-    setDirectDfa(directDfa);
-    setDirectDfaMin(directDFAMin);
-    setDotDirDFA(drawGraphDFA(directDfa));
-    setDotDirDFAMin(drawGraphDFA(directDFAMin));
-    setSintaxTree(ast);
-    setDotSintaxTree(drawTree(ast));
+    // const directDfa = ast.generateDirectDFA()
+    
+    // const directDFAMin = minimizeDFA(directDfa);
+    
+    // setNfa(thompson1.nfa);
+    // setDfa(dfaI);
+    // setDfaMinimized(dfaMinimized);
+    // setDirectDfa(directDfa);
+    // setDirectDfaMin(directDFAMin);
+    // setDotDirDFA(drawGraphDFA(directDfa));
+    // setDotDirDFAMin(drawGraphDFA(directDFAMin));
+    // setSintaxTree(ast);
+    // setDotSintaxTree(drawTree(ast));
   };
   
   const clickSimulate = () => {
@@ -128,12 +140,22 @@ function App() {
         </div>
         <div className="graph-container">
           <h2>NFA:</h2>
-          <Graphviz dot={dotNFA} />
+          <Graphviz dot={dotNFA}  options={{
+
+totalMemory: 33554432, // Set the desired total memory value
+allowMemoryGrowth: true, // Allow memory growth at runtime
+abortingMalloc: false,   // Disable aborting on malloc failure
+}}/>
           <p>Simulation:{outputNfaS}</p>
         </div>
         <div className="graph-container">
           <h2>DFA:</h2>
-          <Graphviz dot={dotDFA} />
+          <Graphviz dot={dotDFA}  options={{
+
+totalMemory: 33554432, // Set the desired total memory value
+allowMemoryGrowth: true, // Allow memory growth at runtime
+abortingMalloc: false,   // Disable aborting on malloc failure
+}}/>
           <p>Simulate:{outputDfaS}</p>
         </div>
         <div className="graph-container">
@@ -152,7 +174,12 @@ function App() {
         </div>
         <div className="graph-container">
           <h2>Min DIRECT DFA:</h2>
-          <Graphviz dot={dotDirDFAMin} />
+          <Graphviz dot={dotDirDFAMin} options={{
+
+            totalMemory: 33554432, // Set the desired total memory value
+            allowMemoryGrowth: true, // Allow memory growth at runtime
+            abortingMalloc: false,   // Disable aborting on malloc failure
+          }}/>
           <p>Simulate:{outputDfaDmin}</p>
         </div>
       </div>

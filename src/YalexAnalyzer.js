@@ -1,7 +1,26 @@
-import { Token } from "./Token";
+import { Token, TokenTypes } from "./Token";
+
+const YalexTokens = {
+  NUMBER: /^[0-9]+/,
+  IDENTIFIER:  /^[a-zA-Z]+[0-9]*[a-zA-Z]/,
+  ADDITION: /\+/,
+  SUBTRACTION: /-/,
+  MULTIPLICATION: /\*/,
+  DIVISION: /\//,
+  EXPONENTIATION: /\^/,
+  PARENTHESIS_LEFT: /\(/,
+  PARENTHESIS_RIGHT: /\)/,
+  SPACE: / +/,
+  ENTER: /\n|\r/,  
+  START_DEFINITION: /^/,
+  DEFINITION: /^[a-zA-Z]+[0-9]*[a-zA-Z]/,
+  COMENTARY: /(\*[a-zA-Z0-9_.-]*\*)/,
+  LET: /let += +/,
+};
 export class YalexAnalyzer{
     constructor(data){
         this.regex = this.readFile(data);
+        this.definitions = {}
     };
     // Use an async function to wait for the data
     readFile(data) {
@@ -10,17 +29,8 @@ export class YalexAnalyzer{
             let tokensSet = []
             let newTokensSet = []
             for (let line of data.split('\n')){
-
-                // let oldIsCommentary = isCommentary;
-                // [newTokensSet, isCommentary, commentaryToken] = this.processLines(line, isCommentary, commentaryToken);
-                // if (oldIsCommentary!==isCommentary){
-                //     [newTokensSet, isCommentary, commentaryToken] = this.processLines(line, isCommentary, commentaryToken);
-                // }
-                // newTokensSet.forEach(token => tokensSet.push(token));
-                // if (!isCommentary){
-                //     tokensSet.push(commentaryToken);
-                // }
-                console.log(`Line: ${line}`);
+              // The spaces are removed
+              line = line.trim();
                 for (let i = 0; i < line.length; ++i){
                     let c = line[i];
                     let new_token = "";
@@ -37,11 +47,43 @@ export class YalexAnalyzer{
                             }
                             i++;
                         }
+                    };
+                    // If is a definition "let "+something
+                    if (c === 'l' && line[i+1]==='e' && line[i+2]==='t' && line[i+3]===' '){
+                      i=i+3;
+                      // It will ignore all the spaces
+                      while (line[i]===' '){
+                        i++;
+                      }
+                      // It will try to get the equal to get the name;
+                      if (line[i] === '='){
+                        // It will ignore all the spaces
+                        while (line[i]===' '){
+                          i++;
+                        }
+                        // It will enter in the function that defines the definition
+                        this.definition(line, i);
+                      }
+                      
                     }
                     
                 }
             }
             console.log(tokensSet);
+        };
+        definition(line, i){
+          let startDef = false;
+          let newDefinition = "";
+          while (i<line.length) {
+            if (line[i] === ' ' && startDef){
+              break;
+            }
+            else{
+              newDefinition+=line[i];
+            };
+            i++;
+          }
+          console.log(newDefinition.match(TokenTypes.DEFINITION))
         }
     processLines(line, isCommentary, commentaryToken){
         let i = 0

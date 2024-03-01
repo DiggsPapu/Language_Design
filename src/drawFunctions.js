@@ -81,14 +81,98 @@ export const drawGraphDFA = (nfa) => {
 
   nfa.transitions.forEach((nextStates, state) => {
     nextStates.forEach((destinies, symbol) => {
-      if (destinies instanceof Array) {
-        destinies.forEach((s) => {
-          dotStr += "" + state + " -> " + s + " [label=" + symbol + "];\n";
-        });
-      } else {
-        dotStr +=
-          "" + state + " -> " + destinies + " [label=" + symbol + "];\n";
-      }
+      switch (symbol){
+        case "+":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#43;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#43;\"];\n";
+          }
+          break;
+        case "*":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#42;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#42;\"];\n";
+          }
+          break;
+        case ".":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#46;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#46;\"];\n";
+          }
+          break;  
+        case ";":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#59;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#59;\"];\n";
+          }
+          break;  
+        case "|":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#124;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#124;\"];\n";
+          }
+          break; 
+        case "(":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#40;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#40;\"];\n";
+          }
+          break; 
+        case ")":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#41;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#41;\"];\n";
+          }
+          break; 
+        case " ":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\" \"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\" \"];\n";
+          }
+          break; 
+        default:
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=" + symbol + "];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=" + symbol + "];\n";
+          }
+          break;
+      };
     });
   });
 
@@ -98,6 +182,117 @@ export const drawGraphDFA = (nfa) => {
 };
 
 export const drawGraph = (nfa) => {
+  let dotStr = "digraph fsm {\n";
+  dotStr += "rankdir=LR;\n";
+  dotStr += 'size="8,5";\n';
+  dotStr += "node [shape = point]; INITIAL_STATE\n";
+  dotStr += "node [shape = doublecircle]; " + nfa.finalState.label + ";\n";
+  dotStr += "node [shape = circle];\n";
+  dotStr += "INITIAL_STATE -> " + nfa.initialState.label + ";\n";
+
+  nfa.transitions.forEach((nextStates, state) => {
+    nextStates.forEach((destinies, symbol) => {
+      switch (symbol){
+        case "+":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#43;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#43;\"];\n";
+          }
+          break;
+        case "*":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#42;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#42;\"];\n";
+          }
+          break;
+        case ".":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#46;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#46;\"];\n";
+          }
+          break;  
+        case ";":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#59;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#59;\"];\n";
+          }
+          break;  
+        case "|":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#124;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#124;\"];\n";
+          }
+          break; 
+        case "(":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#40;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#40;\"];\n";
+          }
+          break; 
+        case ")":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#41;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#41;\"];\n";
+          }
+          break; 
+        case " ":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\" \"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\" \"];\n";
+          }
+          break; 
+        default:
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=" + symbol + "];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=" + symbol + "];\n";
+          }
+          break;
+      };
+    });
+  });
+
+  dotStr += "}";
+
+  return dotStr;
+};
+
+export const drawGraphTokens = (nfa) => {
   let dotStr = "digraph fsm {\n";
   dotStr += "rankdir=LR;\n";
   dotStr += 'size="8,5";\n';
@@ -123,7 +318,6 @@ export const drawGraph = (nfa) => {
 
   return dotStr;
 };
-
 export const drawTree = (tree) =>{
   let counter = 0;
   let dotStr = "digraph tree {\n";
