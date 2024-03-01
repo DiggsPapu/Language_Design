@@ -456,7 +456,6 @@ export class SyntaxTree {
   }
   generateDirectDFATokens() {
     this.getAlphabetTokens();
-    console.log(this.alphabet)
     const tokens = this.tokens;
     // Aniadir un # al final
     let lastNode = this.nodes[this.nodes.length - 1];

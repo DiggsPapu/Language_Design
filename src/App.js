@@ -61,28 +61,18 @@ function App() {
     // console.log(input)
     const regex = new Regex(input);
     setPostfix(regex.postfix);
-    
-    // const thompson = new Thompson(regex.postfix);
-    console.log(regex.postfixTokenized)
     const thompson1 = new ThompsonToken(regex.postfixTokenized);
     const tokenTree = regex.constructTokenTree();
     setDotNFA(drawGraph(thompson1.nfa));
-    const tree = regex.constructTree();
-    const ast1 = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
     const ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
     const nfaToDfa = NFAToDFA(thompson1.nfa);
     setDotDFA(drawGraphDFA(nfaToDfa));
     const dfaMinimized = minimizeDFA(nfaToDfa);
     setDotMinDFA(drawGraphDFA(dfaMinimized));
-    console.log(ast);
     
     setSintaxTree(ast);
     setDotSintaxTree(drawTreeTokens(ast));
-    // ast1.generateDirectDFA("fjdksl")
-    ast.generateDirectDFATokens()
-    console.log(ast.regex);
     const directDfa = ast.generateDirectDFATokens()
-    console.log(directDfa)
     const directDFAMin = minimizeDFA(directDfa);
     
     setNfa(thompson1.nfa);

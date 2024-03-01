@@ -29,12 +29,10 @@ export class Regex {
   constructor(regex) {
     this.regex = regex;
     this.valid = this.isValid(regex);
-    console.log(this.valid);
     if (this.valid) {
       this.regexWithDots = this.insertDotsInRegex();
       this.regexTokenized = this.tokenize(this.regexWithDots);
       this.postfixTokenized = this.infixToPostfixTokenized();
-      console.log(this.postfixTokenized);
       this.postfix = this.infixToPostfix(this.regexWithDots);
       this.augmented = this.regexWithDots + "#";
     } else {
@@ -161,7 +159,6 @@ export class Regex {
         converted += ".";
       }
     }
-    console.log(converted)
     return converted;
   }
 

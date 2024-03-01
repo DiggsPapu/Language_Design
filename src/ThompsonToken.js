@@ -4,7 +4,6 @@ import { State } from "./State.js";
 export class ThompsonToken {
   constructor(postfix) {
     // cosas para el algoritmo
-    console.log(postfix)
     this.postfix = postfix;
     this.stateNumber = 0;
     // lista para guardar cada afn generado
@@ -403,8 +402,6 @@ export class ThompsonToken {
       if (c.value === "|" && c.precedence === 0) {
         const right = stack.pop();
         const left = stack.pop();
-        console.log(right);
-        console.log(left)
         let nfa = this.fromUnion(left, right);
         stack.push(nfa);
         this.nfas.push(nfa);
