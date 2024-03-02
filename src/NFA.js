@@ -52,4 +52,39 @@ export class NFA {
     };
     return false;
   };
+  // YalexSimulation
+  yalexSimulate = (input, indexInput) => {
+    console.log(input);
+    // Inicializar el estado 0
+    let S = eClosureT([this.initialState], this);
+    console.log(S)
+    let c = input[indexInput];
+    console.log(c);
+    while (indexInput<input.length) {
+      S = eClosureT(move(S, c, this),this);
+      console.log(S)
+      for (let indexState = 0; indexState < S.length; indexState++) {
+        if (typeof(this.finalState)!==Array && S[indexState].label === this.finalState.label){
+          console.log("1salgo")
+          return [true, indexInput];
+        } 
+        else if (checkState(S[indexState].label, this.finalState)){
+          console.log("2salgo")
+          return [true, indexInput];
+        };
+      };
+      indexInput++;
+      c = input[indexInput];
+      console.log(c);
+    };
+    for (let indexState = 0; indexState < S.length; indexState++) {
+      if (typeof(this.finalState)!==Array && S[indexState].label === this.finalState.label){
+        return [true, indexInput];
+      } 
+      else if (checkState(S[indexState].label, this.finalState)){
+        return [true, indexInput];
+      };
+    };
+    return [false, indexInput];
+  };
 };

@@ -97,7 +97,7 @@ export class Regex {
         }
         if (
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
-          (last === "|" && regex[i -2] === "\\")
+          (last === "|" && regex[i -2] !== "\\")
         ) {
           console.log("hey1");
           return false;

@@ -58,7 +58,7 @@ function App() {
   );
 
   const handleClick = () => {
-    // console.log(input)
+    console.log(input)
     const regex = new Regex(input);
     setPostfix(regex.postfix);
     const thompson1 = new ThompsonToken(regex.postfixTokenized);

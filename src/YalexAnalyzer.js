@@ -1,8 +1,14 @@
+import { NFA } from "./NFA";
+import { Regex } from "./Regex";
+import { SyntaxTree } from "./SyntaxTree";
+import { ThompsonToken } from "./ThompsonToken";
 import { Token, TokenTypes } from "./Token";
 
 const YalexTokens = {
-  NUMBER: /^[0-9]+/,
-  IDENTIFIER:  /^[a-zA-Z]+[0-9]*[a-zA-Z]/,
+  NUMBER: "0|1|2|3|4|5|6|7|8|9",
+  CHARACTER: "A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z",
+  IDENTIFIER: " /^[a-zA-Z]+[0-9]*[a-zA-Z]/",
+  TILDES: "á|é|í|ó|ú",
   ADDITION: /\+/,
   SUBTRACTION: /-/,
   MULTIPLICATION: /\*/,
@@ -19,54 +25,82 @@ const YalexTokens = {
 };
 export class YalexAnalyzer{
     constructor(data){
+        this.loadAfdCheckers();
         this.regex = this.readFile(data);
         this.definitions = {}
+    };
+    loadAfdCheckers(){
+      // Create the afd for commentaries
+      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*)* *\\*\\)");
+      let tokenTree = regex.constructTokenTree();
+      let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      this.commentaryDFA = ast.generateDirectDFATokens();
+      // Create the afd for delimiters
+      regex = new Regex("( |\n|\r|\t)*");
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      this.delimDFA = ast.generateDirectDFATokens();
+      // Create afd's for the definition
+      // Let + definition_name afd
+      regex = new Regex("let +(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+ *=");
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      this.definitionNameDFA = ast.generateDirectDFATokens();
+      console.log(this.definitionNameDFA)
+      // definition definition afd
+      // regex = new Regex("("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"|_|\\+)+");
+      // tokenTree = regex.constructTokenTree();
+      // ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      // this.definitionNameDFA = ast.generateDirectDFATokens();
+      
     };
     // Use an async function to wait for the data
     readFile(data) {
             let commentaryToken = "";
             let isCommentary = false;
-            let tokensSet = []
+            let isDelim = false;
+            let isDefName = false;
+            let isDefinition = false;
+            let tokensSet = new Map();
             let newTokensSet = []
             for (let line of data.split('\n')){
-              // The spaces are removed
-              line = line.trim();
                 for (let i = 0; i < line.length; ++i){
-                    let c = line[i];
-                    let new_token = "";
-                    // Start commentary
-                    if (c === '(' && line[i+1] === '*'){
-                        while (i<line.length){
-                            new_token += line[i];
-                            if (line[i]===')' ){
-                                if (line[i-1]==='*' ){
-                                    i++
-                                    tokensSet.push(new Token(new_token, "COMMENTARY"));
-                                    break; 
-                                }
-                            }
-                            i++;
-                        }
-                    };
-                    // If is a definition "let "+something
-                    if (c === 'l' && line[i+1]==='e' && line[i+2]==='t' && line[i+3]===' '){
-                      i=i+3;
-                      // It will ignore all the spaces
-                      while (line[i]===' '){
-                        i++;
-                      }
-                      // It will try to get the equal to get the name;
-                      if (line[i] === '='){
-                        // It will ignore all the spaces
-                        while (line[i]===' '){
-                          i++;
-                        }
-                        // It will enter in the function that defines the definition
-                        this.definition(line, i);
-                      }
-                      
+                  let indexComentary = 0;
+                  [isCommentary, indexComentary] = this.commentaryDFA.yalexSimulate(line, i);
+                  let indexDelim = 0;
+                  [isDelim, indexDelim] = this.delimDFA.yalexSimulate(line, i);
+                  let indexDefName = 0;
+                  [isDefName, indexDefName] = this.definitionNameDFA.yalexSimulate(line, i);
+                  // console.log(isCommentary+":"+indexComentary+"|"+isDelim+":"+indexDelim+"|"+isDefinition+":"+indexDefinition);                    
+                  // It is a space or some kinda symbol, it is ignored
+                  if (isDelim){
+                    console.log("isDelim");
+                    i = indexDelim;
+                  }
+                  // It is a commentary, it is ignored
+                  else if (isCommentary){
+                    console.log("isComment");
+                    i = indexComentary;
+                  }
+                  else if (isDefName){
+                    i = indexDefName;
+                    console.log(`indexLet:${indexDefName}->${line[indexDefName]}`);
+                    // If is definition, erase the spaces and the = symbols
+                    let tokenName = ""
+                    while (line[indexDefName]==="="||line[indexDefName]===" "){
+                      console.log(line[indexDefName])
+                      indexDefName--;
                     }
-                    
+                    while (line[indexDefName]!==" "){
+                      console.log(line[indexDefName])
+                      tokenName = line[indexDefName]+tokenName;
+                      indexDefName--;
+                    }
+                    // A new set is created
+                    if (!tokensSet.has(tokenName)){
+                      tokensSet.set(tokenName, []);
+                    }
+                  }
                 }
             }
             console.log(tokensSet);
