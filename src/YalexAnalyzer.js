@@ -54,7 +54,11 @@ export class YalexAnalyzer{
       this.definitionNameDFA = ast.generateDirectDFATokens();
       // definition definition afd
       // regex = new Regex(" *[(('("+YalexTokens.CHARACTER+")')*)|((\"("+YalexTokens.NUMBER+")+\")*)|(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')*)|(('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")')*)]");
-      regex = new Regex(" *(([('(( )|(\\t)|(\\n))')+])|([(('"+YalexTokens.CHARACTER+"'-'"+YalexTokens.CHARACTER+"')|('"+YalexTokens.NUMBER+"'-'"+YalexTokens.NUMBER+"'))])|([('"+YalexTokens.CHARACTER+"("+YalexTokens.CHARACTER+")+')|('"+YalexTokens.NUMBER+"("+YalexTokens.NUMBER+")+')]))")
+      // "([((\""+YalexTokens.CHARACTER+"("+YalexTokens.CHARACTER+")+\")|(\""+YalexTokens.NUMBER+"("+YalexTokens.NUMBER+")+\"))])"
+      // regex = new Regex(" *([('(( )|(\\t)|(\\n))')+])")
+      // regex = new Regex(" *[(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')|('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")'))+]")
+      // regex = new Regex(" *([((\"(("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+")+)\")|(\"("+YalexTokens.NUMBER+")("+YalexTokens.NUMBER+")+\"))])")
+      regex = new Regex(" *(([('(( )|(\\t)|(\\n))')+])|([(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')|('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")'))+])|([((\"(("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+")+)\")|(\"("+YalexTokens.NUMBER+")("+YalexTokens.NUMBER+")+\"))]))")
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionDefinitionDFA = ast.generateDirectDFATokens();
@@ -104,11 +108,9 @@ export class YalexAnalyzer{
                     i = indexDefinitionName;
                     if (isDefinitionName){
                       while (line[indexDefinitionName]==="="||line[indexDefinitionName]===" "||line[indexDefinitionName]==="["){
-                        console.log(line[indexDefinitionName])
                         indexDefinitionName--;
                       }
                       while (line[indexDefinitionName]!==" "){
-                        console.log(line[indexDefinitionName])
                         tokenName = line[indexDefinitionName]+tokenName;
                         indexDefinitionName--;
                       }
@@ -123,11 +125,19 @@ export class YalexAnalyzer{
                       console.log("Start definition");
                       // console.log(this.definitionDefinitionDFA)      
                       [isDefinitionDefinition, indexDefinitionDefinition, S] = this.definitionDefinitionDFA.yalexSimulate(line, i);
+                      console.log(this.definitionDefinitionDFA)
                       // The minus one its bc we dont care about the ]
-                      i = indexDefinitionDefinition-1;
-                      while (line[i]!=="["){
-
+                      i = indexDefinitionDefinition;
+                      if (isDefinitionDefinition){
+                        let definition = ""
+                        indexDefinitionDefinition--;
+                        while (line[indexDefinitionDefinition]!=="["){
+                          definition=line[indexDefinitionDefinition]+definition
+                          indexDefinitionDefinition--;
+                        };
+                        tokensSet.get(tokenName).push(definition);
                       };
+                      console.log(line[i])
                     }
                   }
                 }

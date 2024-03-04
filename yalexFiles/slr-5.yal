@@ -3,3 +3,6 @@
 (* Introducir cualquier header aqui *)
 
 let delim = [' ''\t''\n']
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
+let digit = ["0123456789"]
