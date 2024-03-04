@@ -7,6 +7,7 @@ import { Token, TokenTypes } from "./Token";
 const YalexTokens = {
   NUMBER: "0|1|2|3|4|5|6|7|8|9",
   CHARACTER: "A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z",
+  BACKSLASH: "\\",
   IDENTIFIER: " /^[a-zA-Z]+[0-9]*[a-zA-Z]/",
   TILDES: "á|é|í|ó|ú",
   ADDITION: /\+/,
@@ -31,7 +32,7 @@ export class YalexAnalyzer{
     };
     loadAfdCheckers(){
       // Create the afd for commentaries
-      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*)* *\\*\\)");
+      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*)* *\\*\\)");      
       let tokenTree = regex.constructTokenTree();
       let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.commentaryDFA = ast.generateDirectDFATokens();
@@ -41,18 +42,22 @@ export class YalexAnalyzer{
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.delimDFA = ast.generateDirectDFATokens();
       // Create afd's for the definition
-      // Let + definition_name afd
-      regex = new Regex("let +(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+ *=");
+      // Let +
+      regex = new Regex("let +");
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      this.letDFA = ast.generateDirectDFATokens();
+      //  definition_name afd
+      regex = new Regex(" *("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"|_)* *=");
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionNameDFA = ast.generateDirectDFATokens();
-      console.log(this.definitionNameDFA)
       // definition definition afd
-      // regex = new Regex("("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"|_|\\+)+");
-      // tokenTree = regex.constructTokenTree();
-      // ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
-      // this.definitionNameDFA = ast.generateDirectDFATokens();
-      
+      // regex = new Regex(" *[(('("+YalexTokens.CHARACTER+")')*)|((\"("+YalexTokens.NUMBER+")+\")*)|(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')*)|(('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")')*)]");
+      regex = new Regex(" *(([('(( )|(\\t)|(\\n))')+])|([(('"+YalexTokens.CHARACTER+"'-'"+YalexTokens.CHARACTER+"')|('"+YalexTokens.NUMBER+"'-'"+YalexTokens.NUMBER+"'))])|([('"+YalexTokens.CHARACTER+"("+YalexTokens.CHARACTER+")+')|('"+YalexTokens.NUMBER+"("+YalexTokens.NUMBER+")+')]))")
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      this.definitionDefinitionDFA = ast.generateDirectDFATokens();
     };
     // Use an async function to wait for the data
     readFile(data) {
@@ -60,17 +65,18 @@ export class YalexAnalyzer{
             let isCommentary = false;
             let isDelim = false;
             let isDefName = false;
-            let isDefinition = false;
+            let isLet = false;
             let tokensSet = new Map();
             let newTokensSet = []
+            let S = null;
             for (let line of data.split('\n')){
                 for (let i = 0; i < line.length; ++i){
                   let indexComentary = 0;
-                  [isCommentary, indexComentary] = this.commentaryDFA.yalexSimulate(line, i);
+                  [isCommentary, indexComentary, S] = this.commentaryDFA.yalexSimulate(line, i);
                   let indexDelim = 0;
-                  [isDelim, indexDelim] = this.delimDFA.yalexSimulate(line, i);
-                  let indexDefName = 0;
-                  [isDefName, indexDefName] = this.definitionNameDFA.yalexSimulate(line, i);
+                  [isDelim, indexDelim, S] = this.delimDFA.yalexSimulate(line, i);
+                  let indexLet = 0;
+                  [isLet, indexLet, S] = this.letDFA.yalexSimulate(line, i);
                   // console.log(isCommentary+":"+indexComentary+"|"+isDelim+":"+indexDelim+"|"+isDefinition+":"+indexDefinition);                    
                   // It is a space or some kinda symbol, it is ignored
                   if (isDelim){
@@ -82,23 +88,46 @@ export class YalexAnalyzer{
                     console.log("isComment");
                     i = indexComentary;
                   }
-                  else if (isDefName){
-                    i = indexDefName;
-                    console.log(`indexLet:${indexDefName}->${line[indexDefName]}`);
+                  else if (isLet){
+                    i = indexLet;
+                    console.log(`indexLet:${indexLet}->${line[indexLet]}`);
+                    console.log(line[indexLet+1])
                     // If is definition, erase the spaces and the = symbols
-                    let tokenName = ""
-                    while (line[indexDefName]==="="||line[indexDefName]===" "){
-                      console.log(line[indexDefName])
-                      indexDefName--;
-                    }
-                    while (line[indexDefName]!==" "){
-                      console.log(line[indexDefName])
-                      tokenName = line[indexDefName]+tokenName;
-                      indexDefName--;
-                    }
-                    // A new set is created
-                    if (!tokensSet.has(tokenName)){
-                      tokensSet.set(tokenName, []);
+                    let tokenName = "";
+                    let isDefinitionName = false;
+                    let indexDefinitionName = indexLet;
+                    [isDefinitionName, indexDefinitionName, S] = this.definitionNameDFA.yalexSimulate(line, indexLet);
+                    console.log(`indexLet:${indexDefinitionName}->${line[indexDefinitionName]}`);
+                    console.log(line[indexDefinitionName])
+                    console.log(isDefinitionName)
+                    console.log(S)
+                    i = indexDefinitionName;
+                    if (isDefinitionName){
+                      while (line[indexDefinitionName]==="="||line[indexDefinitionName]===" "||line[indexDefinitionName]==="["){
+                        console.log(line[indexDefinitionName])
+                        indexDefinitionName--;
+                      }
+                      while (line[indexDefinitionName]!==" "){
+                        console.log(line[indexDefinitionName])
+                        tokenName = line[indexDefinitionName]+tokenName;
+                        indexDefinitionName--;
+                      }
+                      // A new set is created
+                      if (!tokensSet.has(tokenName)){
+                        tokensSet.set(tokenName, []);
+                      }
+                      let isDefinitionDefinition = false;
+                      let indexDefinitionDefinition = 0;
+                      // For passing =
+                      i++;
+                      console.log("Start definition");
+                      // console.log(this.definitionDefinitionDFA)      
+                      [isDefinitionDefinition, indexDefinitionDefinition, S] = this.definitionDefinitionDFA.yalexSimulate(line, i);
+                      // The minus one its bc we dont care about the ]
+                      i = indexDefinitionDefinition-1;
+                      while (line[i]!=="["){
+
+                      };
                     }
                   }
                 }

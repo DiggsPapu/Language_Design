@@ -60,19 +60,19 @@ function App() {
   const handleClick = () => {
     console.log(input)
     const regex = new Regex(input);
+    console.log(regex)
     setPostfix(regex.postfix);
-    const thompson1 = new ThompsonToken(regex.postfixTokenized);
+    const thompson1 = new ThompsonToken(regex.postfixTokenized);    
     const tokenTree = regex.constructTokenTree();
-    setDotNFA(drawGraph(thompson1.nfa));
-    const ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
-    const nfaToDfa = NFAToDFA(thompson1.nfa);
-    setDotDFA(drawGraphDFA(nfaToDfa));
-    const dfaMinimized = minimizeDFA(nfaToDfa);
-    setDotMinDFA(drawGraphDFA(dfaMinimized));
     
-    setSintaxTree(ast);
-    setDotSintaxTree(drawTreeTokens(ast));
+    const ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+    console.log(ast)
+    const nfaToDfa = NFAToDFA(thompson1.nfa);
+    console.log(nfaToDfa)
+    const dfaMinimized = minimizeDFA(nfaToDfa);    
+    setSintaxTree(ast);    
     const directDfa = ast.generateDirectDFATokens()
+    console.log(dfaMinimized)
     const directDFAMin = minimizeDFA(directDfa);
     
     setNfa(thompson1.nfa);
@@ -83,6 +83,10 @@ function App() {
     setDotDirDFA(drawGraphDFA(directDfa));
     setDotDirDFAMin(drawGraphDFA(directDFAMin));
     setDotSintaxTree(drawTreeTokens(ast));
+    setDotNFA(drawGraph(thompson1.nfa));
+    setDotDFA(drawGraphDFA(nfaToDfa));
+    setDotSintaxTree(drawTreeTokens(ast));
+    setDotMinDFA(drawGraphDFA(dfaMinimized));
   };
   
   const clickSimulate = () => {
