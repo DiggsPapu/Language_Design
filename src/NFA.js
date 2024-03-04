@@ -76,7 +76,7 @@ export class NFA {
       };
       indexInput++;
       c = input[indexInput];
-      // console.log(c);
+      console.log(c);
     };
     for (let indexState = 0; indexState < S.length; indexState++) {
       if (typeof(this.finalState)!==Array && S[indexState].label === this.finalState.label){
@@ -99,9 +99,10 @@ export class NFA {
       let node_toChange = star.states[k];
       let new_label = "q"+(parseInt(star.states[k].label.substring(1))+steps_moved).toString();
       let node_toChangeTransitions = Array.from(node_toChange.transitions);
+      console.log(node_toChangeTransitions);
       let new_transitions = new Map();
       let new_state = null;
-      if (node_toChangeTransitions[0] !== undefined){
+      if (node_toChangeTransitions[0] !== undefined && node_toChangeTransitions.length<3){
         let new_t = node_toChangeTransitions[0][0];
         if (typeof(node_toChangeTransitions[0][1])==="object") {
           let new_ts = [...node_toChangeTransitions[0][1]]
@@ -123,7 +124,31 @@ export class NFA {
           new_transitions.set(new_t,new_ts);
         };
         new_state = new State(new_label, new_transitions);
-        if (node_toChange.label===star.finalState.label){
+        if (star.finalState.filter((state)=>state.label===node_toChange.label).length>0){
+          qf.push(new_state);
+        };
+        if (node_toChange.label===star.initialState.label){
+          q01.label = new_label;
+        };
+        states.push(new_state);
+        transitions.set(new_label, new_transitions);
+      }
+      else if (node_toChangeTransitions[0] !== undefined && node_toChangeTransitions.length>=3){
+        for (let j = 0; j < node_toChangeTransitions.length; j++){
+          let new_t = node_toChangeTransitions[j][0];
+          let new_tsx = null;
+          let substring = new_t.substring(1);
+          if (substring === "0"){
+            new_tsx="q"+steps_moved.toString();
+          }
+          else {
+            console.log((parseInt(node_toChangeTransitions[j][1].substring(1))+steps_moved).toString())
+            new_tsx= "q"+(parseInt(node_toChangeTransitions[j][1].substring(1))+steps_moved).toString();
+          };
+          new_transitions.set(new_t,new_tsx);
+        };
+        new_state = new State(new_label, new_transitions);
+        if (star.finalState.filter((state)=>state.label===node_toChange.label).length>0){
           qf.push(new_state);
         };
         if (node_toChange.label===star.initialState.label){
@@ -149,6 +174,6 @@ export class NFA {
       };
       transitions.set(this.states[k].label, this.states[k].transitions);
     };
-    return new NFA(q0,qf,states,this.alphabet,transitions);
+    return new NFA(q0,qf,states,[...this.alphabet, ...star.alphabet],transitions);
   }  
 };

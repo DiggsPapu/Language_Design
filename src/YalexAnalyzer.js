@@ -32,7 +32,7 @@ export class YalexAnalyzer{
     };
     loadAfdCheckers(){
       // Create the afd for commentaries
-      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*)* *\\*\\)");      
+      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*|,|\\.)* *\\*\\)");      
       let tokenTree = regex.constructTokenTree();
       let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.commentaryDFA = ast.generateDirectDFATokens();
@@ -57,8 +57,18 @@ export class YalexAnalyzer{
       // "([((\""+YalexTokens.CHARACTER+"("+YalexTokens.CHARACTER+")+\")|(\""+YalexTokens.NUMBER+"("+YalexTokens.NUMBER+")+\"))])"
       // regex = new Regex(" *([('(( )|(\\t)|(\\n))')+])")
       // regex = new Regex(" *[(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')|('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")'))+]")
-      // regex = new Regex(" *([((\"(("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+")+)\")|(\"("+YalexTokens.NUMBER+")("+YalexTokens.NUMBER+")+\"))])")
-      regex = new Regex(" *(([('(( )|(\\t)|(\\n))')+])|([(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')|('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")'))+])|([((\"(("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+")+)\")|(\"("+YalexTokens.NUMBER+")("+YalexTokens.NUMBER+")+\"))]))")
+      regex= new Regex(" *([(\"((\\s)|(\\t)|(\\n))+\")])")
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      this.definitionDefinitionDFA = ast.generateDirectDFATokens();
+      regex= new Regex(" *("+YalexTokens.CHARACTER+")+((\\+)|(\\*)|(\\?))+");
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      console.log(this.definitionDefinitionDFA)
+      console.log(ast.generateDirectDFATokens())
+      console.log(this.definitionDefinitionDFA.addAnotherDfa(ast.generateDirectDFATokens()));
+      // regex= new Regex(" *(("+YalexTokens.CHARACTER+")+((\\+)|(\\*)|(\\?))*(\\(("+YalexTokens.CHARACTER+")+(\\|("+YalexTokens.CHARACTER+")+\\)+))(\\*)?(\\*)?(\\+)?(\\?)?)");
+      // regex = new Regex(" *(([('(( )|(\\t)|(\\n))')+])|([(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')|('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")'))+])|([((\"(("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+")+)\")|(\"("+YalexTokens.NUMBER+")("+YalexTokens.NUMBER+")+\"))])|([(\"((\\s)|(\\t)|(\\n))+\")]))")
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionDefinitionDFA = ast.generateDirectDFATokens();
@@ -71,6 +81,8 @@ export class YalexAnalyzer{
             let isDefName = false;
             let isLet = false;
             let tokensSet = new Map();
+            tokensSet.set("COMMENTARY", []);
+            tokensSet.set("DELIMITERS", []);
             let newTokensSet = []
             let S = null;
             for (let line of data.split('\n')){
@@ -86,11 +98,21 @@ export class YalexAnalyzer{
                   if (isDelim){
                     console.log("isDelim");
                     i = indexDelim;
+                    if (!(tokensSet.get("DELIMITERS").includes(line[i]))) {
+                      tokensSet.get("DELIMITERS").push(line[i]);
+                    };
                   }
                   // It is a commentary, it is ignored
                   else if (isCommentary){
                     console.log("isComment");
                     i = indexComentary;
+                    let definition = "";
+                    while (!(line[indexComentary]==="(" && line[indexComentary+1]==="*")){
+                      definition=line[indexComentary]+definition
+                      indexComentary--;
+                    }
+                    definition=line[indexComentary]+definition;
+                    tokensSet.get("COMMENTARY").push(definition);
                   }
                   else if (isLet){
                     i = indexLet;
@@ -130,14 +152,18 @@ export class YalexAnalyzer{
                       i = indexDefinitionDefinition;
                       if (isDefinitionDefinition){
                         let definition = ""
-                        indexDefinitionDefinition--;
-                        while (line[indexDefinitionDefinition]!=="["){
+                        console.log(line[indexDefinitionDefinition])
+                        while (line[indexDefinitionDefinition-1]!=="="){
                           definition=line[indexDefinitionDefinition]+definition
                           indexDefinitionDefinition--;
+                          console.log(line[indexDefinitionDefinition])
+                        }
+                        definition=line[indexDefinitionDefinition]+definition;
+                        if (!(tokensSet.get(tokenName).includes(definition))) {
+                          tokensSet.get(tokenName).push(definition);
                         };
-                        tokensSet.get(tokenName).push(definition);
                       };
-                      console.log(line[i])
+                      console.log(line[i]);
                     }
                   }
                 }

@@ -20,5 +20,13 @@ Es el repositorio de diseño de lenguajes de programación, tiene el código de 
 - (01)*(10)*
 
 ## Yalex
-Se ejecuta con:
-* node ./src/YalexAnalyzer.js ./yalexFiles/slr-1.yal
+let delim = [' ''\t''\n']
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
+let digit = ["0123456789"]
+let delim = ["\s\t\n"]
+
+let digits = digit+
+let ws = delim+
+let id = letter(letter|digit)*
+let number = digits(.digits)?('E'['+''-']?digits)?

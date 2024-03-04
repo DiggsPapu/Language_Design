@@ -272,7 +272,17 @@ export const drawGraph = (nfa) => {
             dotStr +=
               "" + state + " -> " + destinies + " [label=\" \"];\n";
           }
-          break; 
+          break;
+          case "\\":
+            if (destinies instanceof Array) {
+              destinies.forEach((s) => {
+                dotStr += "" + state + " -> " + s + " [label=&#92];\n";
+              });
+            } else {
+              dotStr +=
+                "" + state + " -> " + destinies + " [label=&#92];\n";
+            }
+            break; 
         default:
           if (destinies instanceof Array) {
             destinies.forEach((s) => {
