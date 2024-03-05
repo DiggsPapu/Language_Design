@@ -30,3 +30,7 @@ let digits = digit+
 let ws = delim+
 let id = letter(letter|digit)*
 let number = digits(.digits)?('E'['+''-']?digits)?
+let digits = digit+ (* Cambie por una acción válida, que devuelva el token *)
+let digits = digit+
+let ws = delim+?
+let id = (letter|digit)*

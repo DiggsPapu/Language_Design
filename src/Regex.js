@@ -118,6 +118,7 @@ export class Regex {
 
     // ver si existe la misma cantidad de parentesis derechos e izquierdos
     if (lefts !== rights) {
+      console.log("Parentesis")
       return false;
     }
 

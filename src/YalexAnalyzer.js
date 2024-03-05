@@ -8,6 +8,7 @@ const YalexTokens = {
   NUMBER: "0|1|2|3|4|5|6|7|8|9",
   CHARACTER: "A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z",
   BACKSLASH: "\\",
+  TERMINAL: "((\n)|(\t)|(\r)|( ))",
   IDENTIFIER: " /^[a-zA-Z]+[0-9]*[a-zA-Z]/",
   TILDES: "á|é|í|ó|ú",
   ADDITION: /\+/,
@@ -57,16 +58,11 @@ export class YalexAnalyzer{
       // "([((\""+YalexTokens.CHARACTER+"("+YalexTokens.CHARACTER+")+\")|(\""+YalexTokens.NUMBER+"("+YalexTokens.NUMBER+")+\"))])"
       // regex = new Regex(" *([('(( )|(\\t)|(\\n))')+])")
       // regex = new Regex(" *[(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')|('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")'))+]")
-      regex= new Regex(" *([(\"((\\s)|(\\t)|(\\n))+\")])")
-      tokenTree = regex.constructTokenTree();
-      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
-      this.definitionDefinitionDFA = ast.generateDirectDFATokens();
-      regex= new Regex(" *("+YalexTokens.CHARACTER+")+((\\+)|(\\*)|(\\?))+");
-      tokenTree = regex.constructTokenTree();
-      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
-      console.log(this.definitionDefinitionDFA)
-      console.log(ast.generateDirectDFATokens())
-      console.log(this.definitionDefinitionDFA.addAnotherDfa(ast.generateDirectDFATokens()));
+      // regex= new Regex(" *([(\"((\\s)|(\\t)|(\\n))+\")])")
+      // regex = new Regex(" *("+YalexTokens.CHARACTER+")+((\\+)|(\\*)|(\\?))+((\n)|(\t)|(\r)|( ))");
+
+      // Parentesis
+      regex = new Regex(" *(((("+YalexTokens.CHARACTER+")+((\\+)|(\\*)|(\\?))*)*\\(("+YalexTokens.CHARACTER+")+(\\|("+YalexTokens.CHARACTER+")+)+\\)((\\+)|(\\*)|(\\?))*)|((("+YalexTokens.CHARACTER+")+((\\+)|(\\*)|(\\?))*)+))"+YalexTokens.TERMINAL)
       // regex= new Regex(" *(("+YalexTokens.CHARACTER+")+((\\+)|(\\*)|(\\?))*(\\(("+YalexTokens.CHARACTER+")+(\\|("+YalexTokens.CHARACTER+")+\\)+))(\\*)?(\\*)?(\\+)?(\\?)?)");
       // regex = new Regex(" *(([('(( )|(\\t)|(\\n))')+])|([(('("+YalexTokens.CHARACTER+")'-'("+YalexTokens.CHARACTER+")')|('("+YalexTokens.NUMBER+")'-'("+YalexTokens.NUMBER+")'))+])|([((\"(("+YalexTokens.CHARACTER+")("+YalexTokens.CHARACTER+")+)\")|(\"("+YalexTokens.NUMBER+")("+YalexTokens.NUMBER+")+\"))])|([(\"((\\s)|(\\t)|(\\n))+\")]))")
       tokenTree = regex.constructTokenTree();
@@ -85,7 +81,11 @@ export class YalexAnalyzer{
             tokensSet.set("DELIMITERS", []);
             let newTokensSet = []
             let S = null;
-            for (let line of data.split('\n')){
+            let lines = data.split('\n');
+            // Handle EOF
+            lines[lines.length - 2] += '\n';
+            console.log(lines[lines.length - 2])
+            for (let line of lines){
                 for (let i = 0; i < line.length; ++i){
                   let indexComentary = 0;
                   [isCommentary, indexComentary, S] = this.commentaryDFA.yalexSimulate(line, i);
@@ -159,6 +159,7 @@ export class YalexAnalyzer{
                           console.log(line[indexDefinitionDefinition])
                         }
                         definition=line[indexDefinitionDefinition]+definition;
+                        definition = definition.trim();
                         if (!(tokensSet.get(tokenName).includes(definition))) {
                           tokensSet.get(tokenName).push(definition);
                         };
