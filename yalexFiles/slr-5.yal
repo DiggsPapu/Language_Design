@@ -1,4 +1,0 @@
-let id = letter(letter|str|digit)*
-let id = (letter|digit)*
-let digits = digit+
-let ws = delim+
