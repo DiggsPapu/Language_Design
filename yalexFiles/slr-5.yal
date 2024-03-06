@@ -2,7 +2,7 @@
 
 (* Introducir cualquier header aqui *)
 
-let hola delim = [' ''\t''\n']
+let hola_delim = [' ''\t''\n'] holasoygerman
 let ws = delim+
 let letter = ['A'-'Z''a'-'z']
 let str = (_)*

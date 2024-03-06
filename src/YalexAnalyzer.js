@@ -28,8 +28,7 @@ const YalexTokens = {
 export class YalexAnalyzer{
     constructor(data){
         this.loadAfdCheckers();
-        this.regex = this.readFile(data);
-        this.definitions = {}
+        this.readFile(data);
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -85,10 +84,10 @@ export class YalexAnalyzer{
       let indexDelim = 0;
       let indexLet = 0;
       let indexStartRule = 0;
-      let tokensSet = new Map();
-      tokensSet.set("COMMENTARY", []);
-      tokensSet.set("DELIMITERS", []);
-      let rulesSet = new Map();
+      this.tokensSet = new Map();
+      this.tokensSet.set("COMMENTARY", []);
+      this.tokensSet.set("DELIMITERS", []);
+      this.rulesSet = new Map();
       let S = null;
       // Handle EOF
       data+="\n";
@@ -102,8 +101,8 @@ export class YalexAnalyzer{
         if (isDelim){
           console.log("isDelim");
           i = indexDelim;
-          if (!(tokensSet.get("DELIMITERS").includes(data[i]))) {
-            tokensSet.get("DELIMITERS").push(data[i]);
+          if (!(this.tokensSet.get("DELIMITERS").includes(data[i]))) {
+            this.tokensSet.get("DELIMITERS").push(data[i]);
           };
         }
         // It is a commentary, it is ignored
@@ -116,7 +115,7 @@ export class YalexAnalyzer{
             indexComentary--;
           }
           definition=data[indexComentary]+definition;
-          tokensSet.get("COMMENTARY").push(definition);
+          this.tokensSet.get("COMMENTARY").push(definition);
         }
         else if (isLet){
           i = indexLet;
@@ -141,8 +140,8 @@ export class YalexAnalyzer{
               indexDefinitionName--;
             }
             // A new set is created
-            if (!tokensSet.has(tokenName)){
-              tokensSet.set(tokenName, []);
+            if (!this.tokensSet.has(tokenName)){
+              this.tokensSet.set(tokenName, []);
             }
             let isDefinitionDefinition = false;
             let indexDefinitionDefinition = 0;
@@ -164,10 +163,13 @@ export class YalexAnalyzer{
               }
               definition=data[indexDefinitionDefinition]+definition;
               definition = definition.trim();
-              if (!(tokensSet.get(tokenName).includes(definition))) {
-                tokensSet.get(tokenName).push(definition);
+              if (!(this.tokensSet.get(tokenName).includes(definition))) {
+                this.tokensSet.get(tokenName).push(definition);
               };
-            };
+            }
+            else {
+              throw Error(`Sintax error in position ${i}, character ${data[i]}, expected a definition for the let definition_name`);
+            }
             // console.log(data[i]);
           }
           else {
@@ -195,8 +197,8 @@ export class YalexAnalyzer{
             if (isDelim){
               console.log("isDelim");
               i = indexDelim;
-              if (!(tokensSet.get("DELIMITERS").includes(data[i]))) {
-                tokensSet.get("DELIMITERS").push(data[i]);
+              if (!(this.tokensSet.get("DELIMITERS").includes(data[i]))) {
+                this.tokensSet.get("DELIMITERS").push(data[i]);
               };
             }
             // It is a commentary, it is ignored
@@ -209,7 +211,7 @@ export class YalexAnalyzer{
                 indexComentary--;
               }
               definition=data[indexComentary]+definition;
-              tokensSet.get("COMMENTARY").push(definition);
+              this.tokensSet.get("COMMENTARY").push(definition);
             }
             // Another rule section starts so this is the only way to change the rule name back to null and set false
             else if (data[i]==="|") {
@@ -232,8 +234,8 @@ export class YalexAnalyzer{
                 indexRuleName--;
               }
               // A new set is created
-              if (!rulesSet.has(ruleName)){
-                rulesSet.set(ruleName.trim(), "");
+              if (!this.rulesSet.has(ruleName)){
+                this.rulesSet.set(ruleName.trim(), "");
               }
               // Here i must create a error if already has a ruleName
               else{
@@ -256,8 +258,8 @@ export class YalexAnalyzer{
                 indexRuleBody--;
               }
               // Must have just one return so it must be empty
-              if (rulesSet.get(ruleName)===""){
-                rulesSet.set(ruleName,return_.trim());
+              if (this.rulesSet.get(ruleName)===""){
+                this.rulesSet.set(ruleName,return_.trim());
               }
               // Any other type doesn't belong and it is treated as an error
               else{
@@ -275,7 +277,7 @@ export class YalexAnalyzer{
           throw Error(`Invalid yalex in position ${i}, character ${data[i]}`);
         }
       }
-      console.log(tokensSet);
-      console.log(rulesSet);
+      console.log(this.tokensSet);
+      console.log(this.rulesSet);
   };
 };
