@@ -32,7 +32,7 @@ export class YalexAnalyzer{
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
-      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*|,|\\.)* *\\*\\)");      
+      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*|,|\\.|-)*( )*\\*\\)");      
       let tokenTree = regex.constructTokenTree();
       let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.commentaryDFA = ast.generateDirectDFATokens();
@@ -72,7 +72,7 @@ export class YalexAnalyzer{
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.ruleBodyDFA = ast.generateDirectDFATokens();
-      console.log(this.ruleBodyDFA)
+      // console.log(this.ruleBodyDFA)
     };
     // Use an async function to wait for the data
     readFile(data) {
@@ -99,7 +99,7 @@ export class YalexAnalyzer{
         [startRuleSection, indexStartRule, S] = this.startRuleDFA.yalexSimulate(data, i);
         // It is a space or some kinda symbol
         if (isDelim){
-          console.log("isDelim");
+          // console.log("isDelim");
           i = indexDelim;
           if (!(this.tokensSet.get("DELIMITERS").includes(data[i]))) {
             this.tokensSet.get("DELIMITERS").push(data[i]);
@@ -107,7 +107,7 @@ export class YalexAnalyzer{
         }
         // It is a commentary, it is ignored
         else if (isCommentary){
-          console.log("isComment");
+          // console.log("isComment");
           i = indexComentary;
           let definition = "";
           while (!(data[indexComentary]==="(" && data[indexComentary+1]==="*")){
@@ -119,7 +119,7 @@ export class YalexAnalyzer{
         }
         else if (isLet){
           i = indexLet;
-          console.log(`indexLet:${indexLet}->${data[indexLet]}`);
+          // console.log(`indexLet:${indexLet}->${data[indexLet]}`);
           // console.log(data[indexLet+1])
           // If is definition, erase the spaces and the = symbols
           let tokenName = "";
@@ -179,23 +179,24 @@ export class YalexAnalyzer{
         // From this point to what is left it will proceed processing
         // the rest of the file because we can't return to let section over here
         else if (startRuleSection){
-          console.log("START RULE SECTION 1ST")
+          // console.log("START RULE SECTION 1ST")
           let isRuleName = false;
           let indexRuleName = 0;
           let isRuleBody = false;
           let indexRuleBody = 0;
           let insideRuleDefinition = false;
           let ruleName = null;
+          let canStartNewRuleSection = false;
           // The +1 its bc is in = position
           for (i=indexStartRule+1; i < data.length; i++){
             [isCommentary, indexComentary, S] = this.commentaryDFA.yalexSimulate(data, i);
             [isDelim, indexDelim, S] = this.delimDFA.yalexSimulate(data, i);
             [isRuleName, indexRuleName, S] = this.ruleNameDFA.yalexSimulate(data, i);
-            console.log("tryRuleBody");
+            // console.log("tryRuleBody");
             [isRuleBody, indexRuleBody, S] = this.ruleBodyDFA.yalexSimulate(data, i);
             // It is a space or some kinda symbol
             if (isDelim){
-              console.log("isDelim");
+              // console.log("isDelim");
               i = indexDelim;
               if (!(this.tokensSet.get("DELIMITERS").includes(data[i]))) {
                 this.tokensSet.get("DELIMITERS").push(data[i]);
@@ -203,7 +204,7 @@ export class YalexAnalyzer{
             }
             // It is a commentary, it is ignored
             else if (isCommentary){
-              console.log("isComment");
+              // console.log("isComment");
               i = indexComentary;
               let definition = "";
               while (!(data[indexComentary]==="(" && data[indexComentary+1]==="*")){
@@ -214,16 +215,17 @@ export class YalexAnalyzer{
               this.tokensSet.get("COMMENTARY").push(definition);
             }
             // Another rule section starts so this is the only way to change the rule name back to null and set false
-            else if (data[i]==="|") {
-              console.log("START ANOTHER RULE SECTION!!!!")
-              console.log(data.slice(i, data.length - 1));
+            else if (data[i]==="|" && canStartNewRuleSection) {
+              // console.log("START ANOTHER RULE SECTION!!!!")
+              // console.log(data.slice(i, data.length - 1));
               insideRuleDefinition = false;
               ruleName = null;
+              canStartNewRuleSection = false;
             }
             // It is a rule name and should not be inside a rule definition
             else if (isRuleName && !insideRuleDefinition) {
-              console.log("RULENAME");
-              console.log(insideRuleDefinition);
+              // console.log("RULENAME");
+              // console.log(insideRuleDefinition);
               i = indexRuleName;
               insideRuleDefinition = true;
               ruleName = null;
@@ -241,10 +243,11 @@ export class YalexAnalyzer{
               else{
                 throw Error(`Invalid yalex in position ${i}, character ${data[i]}, the rule ${ruleName} already has a return value`);
               }
+              canStartNewRuleSection = true;
             }
             // Is a rule body, must be inside a rule definition and rule name must not be null
             else if (isRuleBody && insideRuleDefinition && ruleName !== null) {
-              console.log("RULEBODY");
+              // console.log("RULEBODY");
               i = indexRuleBody;
               let return_ = "";
               // Ignore the }

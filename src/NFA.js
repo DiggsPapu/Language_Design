@@ -66,11 +66,11 @@ export class NFA {
       // console.log(S)
       for (let indexState = 0; indexState < S.length; indexState++) {
         if (typeof(this.finalState)!==Array && S[indexState].label === this.finalState.label){
-          console.log("1salgo")
+          // console.log("1salgo")
           return [true, indexInput, S];
         } 
         else if (checkState(S[indexState].label, this.finalState)){
-          console.log("2salgo")
+          // console.log("2salgo")
           return [true, indexInput, S];
         };
       };

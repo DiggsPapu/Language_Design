@@ -20,50 +20,27 @@ Es el repositorio de diseño de lenguajes de programación, tiene el código de 
 - (01)*(10)*
 
 ## Yalex
-let delim = [' ''\t''\n']
-let letter = ['A'-'Z''a'-'z']
-let digit = ['0'-'9']
-let digit = ["0123456789"]
-let delim = ["\s\t\n"]
+En el caso del yalex se dividió por partes, la primera parte haría un análisis general del archivo yalex de manera que extraería los lets, los returns y los nombres de las variables, además de chequear errores.
+Estos serían los resultados sin modificar de esta parte:
 
-let digits = digit+
-let ws = delim+
-let id = letter(letter|digit)*
-let number = digits(.digits)?('E'['+''-']?digits)?
-let digits = digit+ (* Cambie por una acción válida, que devuelva el token *)
-let digits = digit+
-let ws = delim+?
-let id = (letter|digit)*
+* Yalex slr-5.yal:
 
+![alt text](image-6.png)
 
+* Yalex slr-4.yal:
 
-                 let delim = [' ''\t''\n']
-let ws = delim+
-let letter = ['A'-'Z''a'-'z']
-let str = (_)*
-let digit = ['0'-'9']
-let digits = digit+
-let id = letter(letter|str|digit)*
-let number = digits(.digits)?('E'['+''-']?digits)?
-let delim = [' ''\t''\n']
-let ws = delim+
-let digit = ["0123456789"]
-let digits = digit+
-let number = digits(.digits)?('E'['+''-']?digits)?
-let delim = [' ''\t''\n']
-let ws = delim+
-let letter = ['A'-'Z''a'-'z']
-let digit = ['0'-'9']
-let id = letter(letter|digit)*
-let delim = [' ''\t''\n']
-let ws = delim+
-let letter = ['A'-'Z''a'-'z']
-let digit = ['0'-'9']
-let id = letter(letter|digit)*
-let delim = ["\s\t\n"]
-let ws = delim+
-let letter = ['A'-'Z''a'-'z']
-let digit = ['0'-'9']
-let digits = digit+
-let id = letter(letter|digit)*
-let number = digits(.digits)?('E'['+''-']?digits)?
+![alt text](image.png)
+![alt text](image-1.png)
+
+* Yalex slr-3.yal:
+
+![alt text](image-2.png)
+
+* Yalex slr-2.yal:
+
+![alt text](image-3.png)
+![alt text](image-4.png)
+
+* Yalex slr-1.yal:
+
+![alt text](image-5.png)
