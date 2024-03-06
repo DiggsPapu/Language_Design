@@ -4,7 +4,10 @@
 
 let hola_delim = [' ''\t''\n'] 
 let letter = ['A'-'Z''a'-'z']
+let letter = ['A'-'Z''a'-'z''+''-']
 let digit = ['0'-'9']
+let number = digits(.digits)?('E'['+''-']?digits)?
+let digit = ["0123456789"]
 rule tokens = 
     ws {return otra_cosa}
   | id   (*HOla*)     { return ID }

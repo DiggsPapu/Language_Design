@@ -308,14 +308,19 @@ export class YalexAnalyzer{
         // console.log(isValid);
         // 
         console.log("Token is:"+token);
-        for (let i = 0; i < token.length; i++){
+        let originalLength = token.length;
+        console.log(originalLength)
+        for (let i = 0; i < originalLength; i++){
           let c = token[i];
           if (c==="["){
             let oldIndex = i;
             let newToken = null;
-            [newToken, i] = this.handleBrackets(token, i)
+            let newIndex = 0;
+            [newToken, newIndex] = this.handleBrackets(token, i);
+            i = newIndex;
             token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")")
           }
+          console.log(i)
           console.log(token)
         };
       };
@@ -325,7 +330,7 @@ export class YalexAnalyzer{
     let c = token[i];
     let tokens = []
     let n = 0;
-    while (c!=="]" && n<10){
+    while (c!=="]"){
       console.log(`char to be analyzed:${c}`);
       if (c === "'"){
         if (token[i+1]==="\\"){
@@ -351,6 +356,21 @@ export class YalexAnalyzer{
         }
         // The else must handle errors because cant exist some 9-2 range or 2-2
         i+=3;
+      } else if (c === "\""){
+        i++;
+        c = token[i];
+        // Handling to throw error because can't be just alone
+        if (c === "\""){
+          throw new Error(`Error in position '+${i}+': empty declaration ${token}`);
+        }
+        while (c!=="\""){
+          tokens.push(c);
+          i++;
+          c=token[i];
+        }
+      }
+      if (token[i]==="]"){
+        break;
       }
       i++;
       c = token[i];
