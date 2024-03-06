@@ -58,12 +58,12 @@ export class NFA {
     // console.log(input);
     // Inicializar el estado 0
     let S = eClosureT([this.initialState], this);
-    console.log(S)
+    // console.log(S)
     let c = input[indexInput];
-    console.log(c);
+    // console.log(c);
     while (indexInput<input.length) {
       S = eClosureT(move(S, c, this),this);
-      console.log(S)
+      // console.log(S)
       for (let indexState = 0; indexState < S.length; indexState++) {
         if (typeof(this.finalState)!==Array && S[indexState].label === this.finalState.label){
           console.log("1salgo")
@@ -76,7 +76,7 @@ export class NFA {
       };
       indexInput++;
       c = input[indexInput];
-      console.log(c);
+      // console.log(c);
     };
     for (let indexState = 0; indexState < S.length; indexState++) {
       if (typeof(this.finalState)!==Array && S[indexState].label === this.finalState.label){

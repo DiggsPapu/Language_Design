@@ -13,6 +13,5 @@ let number = digits(.digits)?('E'['+''-']?digits)?
 
 rule tokens = 
     ws
-  | id        { return ID }
-
-  | number    { return NUMBER }
+  | id   (*HOla*)     { return ID }
+  | number   { return NUMBER }
