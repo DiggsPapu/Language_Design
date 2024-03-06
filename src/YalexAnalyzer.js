@@ -169,6 +169,9 @@ export class YalexAnalyzer{
               };
             };
             // console.log(data[i]);
+          }
+          else {
+            throw Error(`Sintax error in position ${i}, character ${data[i]} something is not right in the let definition`);
           }              
         }
         // From this point to what is left it will proceed processing
