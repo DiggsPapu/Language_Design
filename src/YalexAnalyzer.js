@@ -296,6 +296,199 @@ export class YalexAnalyzer{
       afds.push(ast.generateDirectDFATokens());
     }
     // console.log(afds);
-    
+    for (let j = 2; j < keys.length; j++){
+      let key = keys[j];
+      let tokensToEvaluate = this.tokensSet.get(key);
+      let newTokens = [];
+      for (let k = 0; k < tokensToEvaluate.length; k++){
+        let token = tokensToEvaluate[k];
+        token = token.replace(".", "("+YalexTokens.CHARACTER+")")
+        let isValid = this.isValid(token);
+        // console.log(`${token} is valid?`);
+        // console.log(isValid);
+        // 
+        console.log("Token is:"+token);
+        for (let i = 0; i < token.length; i++){
+          let c = token[i];
+          if (c==="["){
+            let oldIndex = i;
+            let newToken = null;
+            [newToken, i] = this.handleBrackets(token, i)
+            token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")")
+          }
+          console.log(token)
+        };
+      };
+    };
+  };
+  handleBrackets(token:String, i){
+    let c = token[i];
+    let tokens = []
+    let n = 0;
+    while (c!=="]" && n<10){
+      console.log(`char to be analyzed:${c}`);
+      if (c === "'"){
+        if (token[i+1]==="\\"){
+          tokens.push(token[i+1]+token[i+2]);
+          i+=3;
+        }
+        else{
+          tokens.push(token[i+1]);
+          i+=2;
+        }
+      }
+      // if (c==="'"){
+        // if (token[i+1]==="\\"){
+        //   tokens.push(token[i+1]+token[i+2]);
+        //   i+=3;
+        // }
+      //   else{
+      //     i+=1;
+      //     tokens.push(token[i-1])
+      //   }
+      //   console.log(token[i-1]+token[i])
+      // }
+      // else if (c==="-"){
+      //   let initTokenAscii = token.charCodeAt(token[i-2]);
+      //   let finTokenAscii = token.charCodeAt(token[i+2]);
+      //   if (initTokenAscii<finTokenAscii){
+      //     // It is +1 because we already appended the first token ascii
+      //     for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
+      //       tokens.push(String.fromCharCode(m));
+      //     }
+      //   }
+      //   // The else must handle errors because cant exist some 9-2 range or 2-2
+      //   i+=3;
+      // }
+      i++;
+      c = token[i];
+      n++;
+    }    
+    console.log(tokens.join("|"))
+    return [tokens.join("|"), i];
+  }
+  // para verificar regex validas, true es valida, false es no valida
+  isValid(regex) {
+    // ver que no existan . ? + |
+    if (regex === ".") return false;
+    if (regex === "?") return false;
+    if (regex === "+") return false;
+    if (regex === "|") return false;
+    if (regex === "*") return false;
+    // ver directamente desde la regex, si se ingresaron mas '(' que ')'
+    // (,)
+    let lefts = 0;
+    let rights = 0;
+    // [,]
+    let leftHooks = 0;
+    let rightHooks = 0;
+    // '' must be a pair
+    let simpleQuotes = 0;
+    // "" must be a pair
+    let doubleQuotes = 0;
+    // ver si hay casos tipo (. , (+ o similares incorrectos
+    let last = "";
+
+    for (let i = 0; i < regex.length; i++) {
+      const c = regex[i];
+
+      if (c === "(") {
+        lefts++;
+      }
+      if (c === ")") {
+        rights++;
+      }
+      if (c === "[") {
+        leftHooks++;
+      }
+      if (c === "]") {
+        rightHooks++;
+      }
+      if (c === "'") {
+        simpleQuotes++;
+      }
+      if (c === "\"") {
+        doubleQuotes++;
+      }
+      if (i !== 0) {
+        last = regex[i - 1];
+        // ver errores con parentesis
+        // antes
+        if (
+          (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
+          (last === "(" && regex[i -2] !== "\\")
+        ) {
+          console.log("parentesis1")
+          return false;
+        }
+        // despues
+        if (c === ")" && (last === "(" || last === "." || last === "|") && regex[i -2] !== "\\") {
+          console.log("parentesis2");
+          return false;
+        }
+        // hooks error
+        // before
+        if (
+          (c === "*" || c === "+" || c === "?" || c === "." || c === "|")&&
+          (last === "[" && regex[i -2] !== "\\")
+        ) {
+          console.log("corchetes1")
+          return false;
+        }
+        // after
+        if (c === "]" && (last === "[" || last === "." || last === "|") && regex[i -2] !== "\\") {
+          console.log("corchetes2");
+          return false;
+        }
+        // ver errores con operadores binarios
+        if (
+          (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
+          (last === "." && regex[i -2] !== "\\")
+        ) {
+          console.log("hey2");
+          return false;
+        }
+        if (
+          (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
+          (last === "|" && regex[i -2] !== "\\")
+        ) {
+          console.log("hey1");
+          return false;
+        }
+      }
+      else {
+        if (
+          (c === "*" || c === "+" || c === "?" || c === "." || c === "|")&&(regex[i-1]!=="\\")
+        ) {
+          console.log("hey0")
+          return false;
+        }
+      }
+    }
+    // ver si el ultimo caracter es binario
+    if ((regex[regex.length - 1] === "." && (regex[regex.length-2]!=="\\")) || (regex[regex.length - 1] === "|" && (regex[regex.length-2]!=="\\"))) {
+      console.log("binario")
+      return false;
+    }
+
+    // ver si existe la misma cantidad de parentesis derechos e izquierdos
+    if (lefts !== rights) {
+      console.log("Parentesis")
+      return false;
+    }
+    if (leftHooks !== rightHooks) {
+      console.log("Hooks")
+      return false;
+    }
+    if (simpleQuotes%2 !== 0) {
+      console.log("Simple Quotes")
+      return false;
+    }
+    if (doubleQuotes%2 !== 0) {
+      console.log("Double Quotes")
+      return false;
+    }
+    // si nada de lo anterior se cumple, se acepta la regex
+    return true;
   };
 };

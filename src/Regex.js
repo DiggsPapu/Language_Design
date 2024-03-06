@@ -52,16 +52,8 @@ export class Regex {
     if (regex === "|") return false;
     if (regex === "*") return false;
     // ver directamente desde la regex, si se ingresaron mas '(' que ')'
-    // (,)
     let lefts = 0;
     let rights = 0;
-    // [,]
-    let leftHooks = 0;
-    let rightHooks = 0;
-    // '' must be a pair
-    let simpleQuotes = 0;
-    // "" must be a pair
-    let doubleQuotes = 0;
     // ver si hay casos tipo (. , (+ o similares incorrectos
     let last = "";
 
@@ -71,21 +63,11 @@ export class Regex {
       if (c === "(") {
         lefts++;
       }
+
       if (c === ")") {
         rights++;
       }
-      if (c === "[") {
-        leftHooks++;
-      }
-      if (c === "]") {
-        rightHooks++;
-      }
-      if (c === "'") {
-        simpleQuotes++;
-      }
-      if (c === "\"") {
-        doubleQuotes++;
-      }
+
       if (i !== 0) {
         last = regex[i - 1];
         // ver errores con parentesis
@@ -94,27 +76,15 @@ export class Regex {
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
           (last === "(" && regex[i -2] !== "\\")
         ) {
-          console.log("parentesis1")
+          console.log("hey4")
           return false;
         }
         // despues
         if (c === ")" && (last === "(" || last === "." || last === "|") && regex[i -2] !== "\\") {
-          console.log("parentesis2");
+          console.log("hey3");
           return false;
         }
-        // hooks error
-        if (
-          (c === "*" || c === "+" || c === "?" || c === "." || c === "|")
-          &&last === "["
-        ) {
-          console.log("corchetes1")
-          return false;
-        }
-        // despues
-        if (c === "]" && (last === "[" || last === "." || last === "|")) {
-          console.log("corchetes2");
-          return false;
-        }
+
         // ver errores con operadores binarios
         if (
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
@@ -140,9 +110,9 @@ export class Regex {
         }
       }
     }
+
     // ver si el ultimo caracter es binario
     if ((regex[regex.length - 1] === "." && (regex[regex.length-2]!=="\\")) || (regex[regex.length - 1] === "|" && (regex[regex.length-2]!=="\\"))) {
-      console.log("binario")
       return false;
     }
 
@@ -151,21 +121,11 @@ export class Regex {
       console.log("Parentesis")
       return false;
     }
-    if (leftHooks !== rightHooks) {
-      console.log("Hooks")
-      return false;
-    }
-    if (simpleQuotes%2 !== 0) {
-      console.log("Simple Quotes")
-      return false;
-    }
-    if (doubleQuotes%2 !== 0) {
-      console.log("Double Quotes")
-      return false;
-    }
+
     // si nada de lo anterior se cumple, se acepta la regex
     return true;
   }
+
   // para manejar correctamenta la concatenacion con el punto y que el thompson no se trabe,
   insertDotsInRegex() {
     // se necesita la regex a recorrer, y un postfix vacio a construir
