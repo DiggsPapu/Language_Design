@@ -2,7 +2,9 @@
 
 (* Introducir cualquier header aqui *)
 
-let hola_delim = ['+''\t''\n'] 
+let hola_delim = [' ''\t''\n'] 
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
 rule tokens = 
     ws {return otra_cosa}
   | id   (*HOla*)     { return ID }

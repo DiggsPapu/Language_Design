@@ -336,35 +336,26 @@ export class YalexAnalyzer{
           tokens.push(token[i+1]);
           i+=2;
         }
+      } else if (c==="-"){
+        let initTokenAscii = token[i-2];
+        let finTokenAscii = token[i+2];
+        initTokenAscii = initTokenAscii.charCodeAt(0);
+        finTokenAscii = finTokenAscii.charCodeAt(0);
+        console.log(`initToken:${token[i-2]} finToken:${token[i+2]}`);
+        console.log(`initToken:${initTokenAscii} finToken:${finTokenAscii}`);
+        if (initTokenAscii<finTokenAscii){
+          // It is +1 because we already appended the first token ascii
+          for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
+            tokens.push(String.fromCharCode(m));
+          }
+        }
+        // The else must handle errors because cant exist some 9-2 range or 2-2
+        i+=3;
       }
-      // if (c==="'"){
-        // if (token[i+1]==="\\"){
-        //   tokens.push(token[i+1]+token[i+2]);
-        //   i+=3;
-        // }
-      //   else{
-      //     i+=1;
-      //     tokens.push(token[i-1])
-      //   }
-      //   console.log(token[i-1]+token[i])
-      // }
-      // else if (c==="-"){
-      //   let initTokenAscii = token.charCodeAt(token[i-2]);
-      //   let finTokenAscii = token.charCodeAt(token[i+2]);
-      //   if (initTokenAscii<finTokenAscii){
-      //     // It is +1 because we already appended the first token ascii
-      //     for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
-      //       tokens.push(String.fromCharCode(m));
-      //     }
-      //   }
-      //   // The else must handle errors because cant exist some 9-2 range or 2-2
-      //   i+=3;
-      // }
       i++;
       c = token[i];
       n++;
-    }    
-    console.log(tokens.join("|"))
+    }
     return [tokens.join("|"), i];
   }
   // para verificar regex validas, true es valida, false es no valida
