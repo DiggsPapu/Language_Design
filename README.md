@@ -34,3 +34,36 @@ let digits = digit+ (* Cambie por una acción válida, que devuelva el token *)
 let digits = digit+
 let ws = delim+?
 let id = (letter|digit)*
+
+
+
+                 let delim = [' ''\t''\n']
+let ws = delim+
+let letter = ['A'-'Z''a'-'z']
+let str = (_)*
+let digit = ['0'-'9']
+let digits = digit+
+let id = letter(letter|str|digit)*
+let number = digits(.digits)?('E'['+''-']?digits)?
+let delim = [' ''\t''\n']
+let ws = delim+
+let digit = ["0123456789"]
+let digits = digit+
+let number = digits(.digits)?('E'['+''-']?digits)?
+let delim = [' ''\t''\n']
+let ws = delim+
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
+let id = letter(letter|digit)*
+let delim = [' ''\t''\n']
+let ws = delim+
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
+let id = letter(letter|digit)*
+let delim = ["\s\t\n"]
+let ws = delim+
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
+let digits = digit+
+let id = letter(letter|digit)*
+let number = digits(.digits)?('E'['+''-']?digits)?
