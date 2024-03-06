@@ -29,6 +29,7 @@ export class YalexAnalyzer{
     constructor(data){
         this.loadAfdCheckers();
         this.readFile(data);
+        this.analyzeTokens()
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -282,5 +283,19 @@ export class YalexAnalyzer{
       }
       console.log(this.tokensSet);
       console.log(this.rulesSet);
+  };
+  analyzeTokens(){
+    // FIRST, GET AFDS TO CHECK IF THEY ARE SOME DEFINITION
+    let keys = Array.from(this.tokensSet.keys())
+    let afds = []
+    // The first 2 will be ommited bc they are Commentaries and Delimiters
+    for (let i = 2; i<keys.length; i++){
+      let regex = new Regex(keys[i]);
+      let tokenTree = regex.constructTokenTree();
+      let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      afds.push(ast.generateDirectDFATokens());
+    }
+    // console.log(afds);
+    
   };
 };
