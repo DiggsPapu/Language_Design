@@ -7,6 +7,7 @@ import { Token, TokenTypes } from "./Token";
 const YalexTokens = {
   NUMBER: "0|1|2|3|4|5|6|7|8|9",
   CHARACTER: "A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z",
+  SYMBOLS: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z','a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','0', '1', '2', '3', '4', '5', '6', '7', '8', '9','=', ':', ';', '\\+', '-', '\\*', '\\?', '\\.', '\\(', '\\)'],
   BACKSLASH: "\\",
   TERMINAL: "((\n)|(\t)|(\r)|( ))",
   IDENTIFIER: " /^[a-zA-Z]+[0-9]*[a-zA-Z]/",
@@ -54,7 +55,7 @@ export class YalexAnalyzer{
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionNameDFA = ast.generateDirectDFATokens();
       // definition definition afd
-      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|=|:|;|\\+|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'=')+"+YalexTokens.TERMINAL)
+      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|=|^|:|;|\\+|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'^')+"+YalexTokens.TERMINAL)
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionDefinitionDFA = ast.generateDirectDFATokens();
@@ -64,7 +65,7 @@ export class YalexAnalyzer{
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.startRuleDFA = ast.generateDirectDFATokens();
       // rule name
-      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|\\+|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'<'|'>'|\">=\"|\"<=\"|\":=\")+"+YalexTokens.TERMINAL)
+      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|\\+|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'<'|'>'|'^'|\">=\"|\"<=\"|\":=\")+"+YalexTokens.TERMINAL)
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.ruleNameDFA = ast.generateDirectDFATokens();
@@ -284,17 +285,123 @@ export class YalexAnalyzer{
       console.log(this.tokensSet);
       console.log(this.rulesSet);
   };
+  isOperator(element) {
+    return ["|", ".", "?", "*", "+", "(", ")"].includes(element);
+  }
+  insertDotsInRegexTokenizedWithWords(dfaArray, regex) {
+    // se necesita la regex a recorrer, y un postfix vacio a construir
+    let tokens = [];
+    let token = null;
+    let isWordChar = false;
+    let index = 0;
+    let S = null;
+    let isWord = false;
+    let indexTemp = 0
+    // recorrer cada caracter para construir la regex con puntos
+    for (let c = 0; c < regex.length; c++) {
+      const element = regex[c];
+
+      for (let n = 0; n<dfaArray.length; n++){
+        let currentDfa = dfaArray[n];
+        [isWord, indexTemp, S] = currentDfa.yalexSimulate(regex, c);
+        if (isWord && indexTemp>index){
+          isWordChar = isWord;
+          index = indexTemp; 
+        };
+      };
+      if (isWordChar){
+        let newWord = regex.slice(c, index+1);
+        let newToken = new Token(newWord, -2);
+        tokens.push(newToken);
+        c = index;
+        isWordChar = false;
+      }
+      else{
+        switch(regex[c]){
+          case "*":
+            token = new Token("*", 2);
+            tokens.push(token);
+            break;
+          case "+":
+            token = new Token("+", 2);
+            tokens.push(token);
+            break;
+          case "?":
+            token = new Token("?", 2);
+            tokens.push(token);
+            break;
+          case ".":
+            token = new Token(".", 1);
+            tokens.push(token);
+            break;
+          case "|":
+            token = new Token("|", 0);
+            tokens.push(token);
+            break;
+          case "(":
+            token = new Token("(", -1);
+            tokens.push(token);
+            break;
+          case ")":
+            token = new Token(")", 3);
+            tokens.push(token);
+            break;
+          case "\\":
+            // El backslash convierte a un operador en un simbolo.
+            if (this.isOperator(regex[c+1])){
+              tokens.push(new Token(regex[c+1], -2))
+              c++;
+            }
+            // El backslash es un simbolo
+            else{
+              tokens.push(new Token("\\", -2));
+            }
+            break;
+          default:
+            token = new Token(element, -2);
+            tokens.push(token);
+            break;  
+        };
+      }
+      // para el parentesis izquierdo y el operador union es imposible concatenar, lo mismo si ya existe la concatenacion
+      if ((element === "(" || element === "|" || element === ".")&&(regex[c-1]!=="\\")) {
+        continue;
+      }
+      // si no se ha llegado al ultimo caracter
+      if (c < regex.length - 1) {
+        // se obtiene cual es el siguiente
+        const next = regex[c + 1];
+
+        // se revisa si es un operador no igual a '(', si si, se interrumpe la iteracion
+        if ((this.isOperator(next) && next !== "(") && regex[c]!=="\\") {
+          continue;
+        }
+        else if (this.isOperator(next)&&regex[c]==="\\"){
+          continue;
+        }
+        // si no, concatenamos
+        tokens.push(new Token(".", 1));
+      }
+    }
+    return tokens;
+  }
   analyzeTokens(){
     // FIRST, GET AFDS TO CHECK IF THEY ARE SOME DEFINITION
     let keys = Array.from(this.tokensSet.keys())
     let afds = []
+    let regex = new Regex(keys[2]);
+    let tokenTree = regex.constructTokenTree();
+    let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+    // let superdfa = ast.generateDirectDFATokens()
     // The first 2 will be ommited bc they are Commentaries and Delimiters
     for (let i = 2; i<keys.length; i++){
-      let regex = new Regex(keys[i]);
-      let tokenTree = regex.constructTokenTree();
-      let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      regex = new Regex(keys[i]);
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       afds.push(ast.generateDirectDFATokens());
+      // superdfa.addAnotherDfa(ast.generateDirectDFATokens());
     }
+    // console.log(superdfa);
     // console.log(afds);
     for (let j = 2; j < keys.length; j++){
       let key = keys[j];
@@ -303,6 +410,7 @@ export class YalexAnalyzer{
       for (let k = 0; k < tokensToEvaluate.length; k++){
         let token = tokensToEvaluate[k];
         token = token.replace(".", "("+YalexTokens.CHARACTER+")")
+        token = token.replace("_", "("+YalexTokens.SYMBOLS.join("|")+")")
         let isValid = this.isValid(token);
         // console.log(`${token} is valid?`);
         // console.log(isValid);
@@ -318,63 +426,140 @@ export class YalexAnalyzer{
             let newIndex = 0;
             [newToken, newIndex] = this.handleBrackets(token, i);
             i = newIndex;
-            token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")")
+            token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
+          } else if (c === "'") {
+            if ( token[i+1]==="+" || token[i+1] === "*"){
+              token = token.replace(token.slice(i, i+2), "(\\"+token[i+1]+")");
+            }
+            else{
+              token = token.replace(token.slice(i, i+2), "("+token[i+1]+")");
+            }
           }
-          console.log(i)
+          
+          // console.log(i)
           console.log(token)
         };
+        // Reemplazo del old token
+        this.tokensSet.get(key)[k]=this.insertDotsInRegexTokenizedWithWords(afds,token)
       };
     };
+    // console.log(this.tokensSet)
   };
   handleBrackets(token:String, i){
+    // pass the [
+    i++;
     let c = token[i];
     let tokens = []
-    let n = 0;
-    while (c!=="]"){
-      console.log(`char to be analyzed:${c}`);
-      if (c === "'"){
-        if (token[i+1]==="\\"){
-          tokens.push(token[i+1]+token[i+2]);
-          i+=3;
-        }
-        else{
-          tokens.push(token[i+1]);
-          i+=2;
-        }
-      } else if (c==="-"){
-        let initTokenAscii = token[i-2];
-        let finTokenAscii = token[i+2];
-        initTokenAscii = initTokenAscii.charCodeAt(0);
-        finTokenAscii = finTokenAscii.charCodeAt(0);
-        console.log(`initToken:${token[i-2]} finToken:${token[i+2]}`);
-        console.log(`initToken:${initTokenAscii} finToken:${finTokenAscii}`);
-        if (initTokenAscii<finTokenAscii){
-          // It is +1 because we already appended the first token ascii
-          for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
-            tokens.push(String.fromCharCode(m));
-          }
-        }
-        // The else must handle errors because cant exist some 9-2 range or 2-2
-        i+=3;
-      } else if (c === "\""){
-        i++;
-        c = token[i];
-        // Handling to throw error because can't be just alone
-        if (c === "\""){
-          throw new Error(`Error in position '+${i}+': empty declaration ${token}`);
-        }
-        while (c!=="\""){
-          tokens.push(c);
-          i++;
-          c=token[i];
-        }
-      }
-      if (token[i]==="]"){
-        break;
-      }
+    let antiTokens = []
+    if (c === "^"){
       i++;
       c = token[i];
-      n++;
+      while (c!=="]"){
+        // console.log(`char to be analyzed:${c}`);
+        if (c === "'"){
+          if (token[i+1]==="\\"){
+            antiTokens.push(token[i+1]+token[i+2]);
+            i+=3;
+          }
+          else{
+            if (token[i+1]==="+" || token[i+1]==="*") {
+              antiTokens.push("\\"+token[i+1]);
+            } else{
+              antiTokens.push(token[i+1]);
+            }          
+            i+=2;
+          }
+        } else if (c==="-"){
+          let initTokenAscii = token[i-2];
+          let finTokenAscii = token[i+2];
+          initTokenAscii = initTokenAscii.charCodeAt(0);
+          finTokenAscii = finTokenAscii.charCodeAt(0);
+          // console.log(`initToken:${token[i-2]} finToken:${token[i+2]}`);
+          // console.log(`initToken:${initTokenAscii} finToken:${finTokenAscii}`);
+          if (initTokenAscii<finTokenAscii){
+            // It is +1 because we already appended the first token ascii
+            for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
+              antiTokens.push(String.fromCharCode(m));
+            };
+          };
+          // The else must handle errors because cant exist some 9-2 range or 2-2
+          i+=3;
+        } else if (c === "\""){
+          i++;
+          c = token[i];
+          // Handling to throw error because can't be just alone
+          if (c === "\""){
+            throw new Error(`Error in position '+${i}+': empty declaration ${token}`);
+          }
+          while (c!=="\""){
+            antiTokens.push(c);
+            i++;
+            c=token[i];
+          }
+        }
+        if (token[i]==="]"){
+          break;
+        }
+        i++;
+        c = token[i];
+      }
+      for (let n = 0; n < YalexTokens.SYMBOLS.length; n++) {
+        let val = YalexTokens.SYMBOLS[n];
+        if (antiTokens.indexOf(val) === -1){
+          tokens.push(val);
+        };
+      };
+    }
+    else {
+      while (c!=="]"){
+        // console.log(`char to be analyzed:${c}`);
+        if (c === "'"){
+          if (token[i+1]==="\\"){
+            tokens.push(token[i+1]+token[i+2]);
+            i+=3;
+          }
+          else{
+            if (token[i+1]==="+" || token[i+1]==="*") {
+              tokens.push("\\"+token[i+1]);
+            } else{
+              tokens.push(token[i+1]);
+            }          
+            i+=2;
+          }
+        } else if (c==="-"){
+          let initTokenAscii = token[i-2];
+          let finTokenAscii = token[i+2];
+          initTokenAscii = initTokenAscii.charCodeAt(0);
+          finTokenAscii = finTokenAscii.charCodeAt(0);
+          // console.log(`initToken:${token[i-2]} finToken:${token[i+2]}`);
+          // console.log(`initToken:${initTokenAscii} finToken:${finTokenAscii}`);
+          if (initTokenAscii<finTokenAscii){
+            // It is +1 because we already appended the first token ascii
+            for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
+              tokens.push(String.fromCharCode(m));
+            };
+          };
+          // The else must handle errors because cant exist some 9-2 range or 2-2
+          i+=3;
+        } else if (c === "\""){
+          i++;
+          c = token[i];
+          // Handling to throw error because can't be just alone
+          if (c === "\""){
+            throw new Error(`Error in position '+${i}+': empty declaration ${token}`);
+          }
+          while (c!=="\""){
+            tokens.push(c);
+            i++;
+            c=token[i];
+          }
+        }
+        if (token[i]==="]"){
+          break;
+        }
+        i++;
+        c = token[i];
+      }
     }
     return [tokens.join("|"), i];
   }
