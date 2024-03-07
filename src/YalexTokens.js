@@ -23,15 +23,7 @@ export const YalexTokens = {
 
 export class asciiUniverses {
   constructor() {
-    this.getNumberUniverse();
-    this.getLetterUniverse();
-    
-  }
-  getNumberUniverse(){
-    this.NUMBER = []
-    for (let i = 47; i <= 58; i++){
-      this.NUMBER.push(String.fromCharCode(i));
-    }
+    this.getUniverse();
   }
   getUniverse(){
     this.MAYUS= []

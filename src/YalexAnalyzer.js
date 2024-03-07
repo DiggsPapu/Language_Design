@@ -20,8 +20,6 @@ export class YalexAnalyzer{
         console.log(this.tokenChange);
         this.createBigTree();
         this.ascii = new asciiUniverses();
-        console.log(this.ascii.UNIVERSE)
-        console.log(this.ascii.LETTER)
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -757,15 +755,56 @@ export class YalexAnalyzer{
     console.log(this.generalRegex)
     this.analyzeTokens2();
   };
+  handlingSimpleQuotes(regex, i){
+    if ( regex[i+1]==="+" || regex[i+1] === "*" || regex[i+1] === "." || regex[i+1] === "(" || regex[i+1] === ")"){
+      regex = regex.replace(this.generalRegex.slice(i, i+3), "(\\"+regex[i+1]+")");
+    }
+    else if (regex[i+1]==="\\" ){
+      regex = regex.replace(regex.slice(i, i+4), "(\\"+regex[i+2]+")");
+    }
+    else{
+      regex = regex.replace(regex.slice(i, i+3), "("+regex[i+1]+")");
+    }
+  }
+  handlingDoubleQuotes(regex, i){
+    let originalI = i;
+    i++;
+    let c = regex[i];
+    let antiTokens = []
+    // Handling to throw error because can't be just alone
+    if (c === "\""){
+      throw new Error(`Error: empty declaration like "" `);
+    }
+    while (c!=="\"" && i<regex.length){
+      antiTokens.push(c);
+      i++;
+      c=regex[i];
+    }
+    if (i>regex.length){
+      throw  new Error(`Error: unclosed double quotes at the end of expression "${originalI}"`);
+    }
+    console.log(antiTokens)
+    let array = regex.split("");
+    // console.log(array)
+    array[originalI] = "("+antiTokens.join("|")+")";
+    // console.log(array)
+    array.splice(originalI+1, i-originalI);
+    console.log(array)
+    regex = array.join("");
+    return regex;
+  }
   analyzeTokens2(){
-  for (let k = 0; k < this.generalRegex.length; k++){
-    let token = this.generalRegex[k];
-    token = token.replace(".", "("+YalexTokens.CHARACTER+")")
-    token = token.replace("_", "("+YalexTokens.SYMBOLS.join("|")+")")
-    token = token.replace("'('", "\\(")
-    token = token.replace("')'", "\\)")
-    token = token.replace("'+'", "\\+")
-    token = token.replace("'*'", "\\*")
+  for (let i = 0; i < this.generalRegex.length; i++){
+    let c = this.generalRegex[i];
+    // Double quotes
+    if (c === "\"" && this.generalRegex[i-1]!=="\\") {
+      this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
+    }
+    // Simple quotes
+    if (c === "'" && this.generalRegex[i-1]!=="\\") {
+      this.handlingSimpleQuotes(this.generalRegex, i);
+    }
+    
     // let isValid = this.regex.isValid(token);
     // // console.log(`${token} is valid?`);
     // // console.log(isValid);
