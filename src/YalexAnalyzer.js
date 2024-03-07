@@ -811,17 +811,18 @@ export class YalexAnalyzer{
       afds.push(this.ast.generateDirectDFATokens());
     }
     // eliminate recursion
-    let tokens = [];
-    let token = null;
-    let isWordChar = false;
-    let index = 0;
-    let S = null;
-    let isWord = false;
-    let indexTemp = 0;
-    let afdIndex = 0;
     for (let i = 0; i < this.generalRegex.length; i++){
-      console.log(this.generalRegex[i])
+      let tokens = [];
+      let token = null;
+      let isWordChar = false;
+      let index = 0;
+      let S = null;
+      let isWord = false;
+      let indexTemp = 0;
+      let afdIndex = 0;
+      // console.log(this.generalRegex[i])
       // Detect if there is a recursion
+      // console.log(`original i: ${i}, ${this.generalRegex}`)
       for (let n = 0; n<afds.length; n++){
         let currentDfa = afds[n];
         [isWord, indexTemp, S] = currentDfa.yalexSimulate(this.generalRegex, i);
@@ -833,16 +834,17 @@ export class YalexAnalyzer{
       };
       if (isWordChar){
         let array = this.generalRegex.split('');
-        console.log(keys[afdIndex+2])
-        console.log(this.tokensSet.get(keys[afdIndex+2]))
+        // console.log(keys[afdIndex+2])
+        // console.log(this.tokensSet.get(keys[afdIndex+2]))
         array[i] = this.tokensSet.get(keys[afdIndex+2]);
-        array.splice(i+1, index+1-i);
+        array.splice(i+1, index-i);
         this.generalRegex = array.join('');
         // Esto sirve para analizar el nuevo string para detectar si hay otra recursion a solucionar
-        i--;
+        i-=2;
         isWordChar = false;
       };
+      // console.log(`final i: ${i}, ${this.generalRegex}`)
     };
     console.log(this.generalRegex)
-  }
+  };
 };
