@@ -31,10 +31,10 @@ export class Regex {
     let last = "";
     for (let i = 0; i < regex.length; i++) {
       const c = regex[i];
-      if (c === "(") {
+      if (c === "(" && regex[i - 1] !== "\\") {
         lefts++;
       }
-      if (c === ")") {
+      if (c === ")" && regex[i - 1] !== "\\") {
         rights++;
       }
       if (i !== 0) {
@@ -80,6 +80,7 @@ export class Regex {
     }
     // ver si el ultimo caracter es binario
     if ((regex[regex.length - 1] === "." && (regex[regex.length-2]!=="\\")) || (regex[regex.length - 1] === "|" && (regex[regex.length-2]!=="\\"))) {
+      console.log("binario")
       return false;
     }
     // ver si existe la misma cantidad de parentesis derechos e izquierdos

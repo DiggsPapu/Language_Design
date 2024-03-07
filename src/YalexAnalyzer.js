@@ -594,17 +594,144 @@ export class YalexAnalyzer{
     console.log(this.generalRegex);
     this.generalRegex = "("
     for (let i = 0; i < keys.length; i++){
+      console.log(keys[i]);
       let regex = this.tokensSet.get(keys[i]);
       if (regex !== undefined){
         this.generalRegex += "("+this.tokenChange.get(keys[i])+")|"
       }
       else{
-        this.generalRegex += "("+keys[i]+")|"
-      }
+        let token = keys[i]
+        token = token.replace(".", "("+YalexTokens.CHARACTER+")")
+        token = token.replace("_", "("+YalexTokens.SYMBOLS.join("|")+")")
+        // console.log(`${token} is valid?`);
+        // console.log(isValid);
+        // console.log("Token is:"+token);
+        let originalLength = token.length;
+        // console.log(originalLength)
+        for (let i = 0; i < originalLength; i++){
+          let c = token[i];
+          let oldIndex = i;
+          let newToken = null;
+          let newIndex = 0;
+          [newToken, newIndex] = this.handleName(token, i);
+          i = newIndex;
+          let isValid = this.regex.isValid(newToken);
+          if (isValid){
+            console.log(newToken)
+            token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
+          }
+        };
+        console.log(token)
+        this.generalRegex += "("+token+")|"
+      };
     };
     this.generalRegex = this.generalRegex.slice(0, this.generalRegex.length-1);
     this.generalRegex+= ")";
+    console.log(this.regex.isValid(this.generalRegex))
     console.log(this.generalRegex);
-
+    for (let i = 0; i < this.generalRegex.length; i++){
+    
+    }
   };
+  handleName(token, i){
+    let c = token[i];
+    let tokens = []
+    let antiTokens = []
+    if (c === "^"){
+      i++;
+      c = token[i];
+      while (i<token.length){
+        // console.log(`char to be analyzed:${c}`);
+        if (c === "'"){
+          if (token[i+1]==="\\"){
+            antiTokens.push(token[i+1]+token[i+2]);
+            i+=3;
+          }
+          else{
+            if (token[i+1]==="+" || token[i+1]==="*") {
+              antiTokens.push("\\"+token[i+1]);
+            } else{
+              antiTokens.push(token[i+1]);
+            }          
+            i+=2;
+          }
+        } else if (c === "\""){
+          i++;
+          c = token[i];
+          // Handling to throw error because can't be just alone
+          if (c === "\""){
+            throw new Error(`Error in position '+${i}+': empty declaration ${token}`);
+          }
+          while (c!=="\""){
+            antiTokens.push(c);
+            i++;
+            c=token[i];
+          }
+        } else if (c==="["){
+          let oldIndex = i;
+          let newToken = null;
+          let newIndex = 0;
+          [newToken, newIndex] = this.handleBrackets(token, i);
+          i = newIndex;
+          token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
+        } 
+        i++;
+        c = token[i];
+      }
+      for (let n = 0; n < YalexTokens.SYMBOLS.length; n++) {
+        let val = YalexTokens.SYMBOLS[n];
+        if (antiTokens.indexOf(val) === -1){
+          tokens.push(val);
+        };
+      };
+    }
+    else {
+      while (i<token.length){
+        console.log(`char to be analyzed:${c}`);
+        if (c === "'"){
+          if (token[i+1]==="\\"){
+            tokens.push(token[i+1]+token[i+2]);
+            i+=3;
+          }
+          else{
+            if (token[i+1]==="+" || token[i+1]==="*" || token[i+1]==="(" || token[i+1]===")" || token[i+1]===".") {
+              tokens.push("\\"+token[i+1]);
+            } else{
+              tokens.push(token[i+1]);
+            }          
+            i+=2;
+          }
+        } else if (c === "\""){
+          i++;
+          c = token[i];
+          // Handling to throw error because can't be just alone
+          if (c === "\""){
+            throw new Error(`Error in position '+${i}+': empty declaration ${token}`);
+          }
+          while (c!=="\""){
+            if (c==="\\"){
+              let newToken = c + token[i+1];
+              tokens.push(newToken);
+              i+=2;
+              c=token[i];
+            } else {
+              tokens.push(c);
+              i++;
+              c=token[i];
+            }
+          };
+        } else if (c==="["){
+          let oldIndex = i;
+          let newToken = null;
+          let newIndex = 0;
+          [newToken, newIndex] = this.handleBrackets(token, i);
+          i = newIndex;
+          token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
+        }
+        i++;
+        c = token[i];
+      }
+    }
+    return [tokens.join("|"), i];
+  }
 };
