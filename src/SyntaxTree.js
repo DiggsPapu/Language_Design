@@ -1,11 +1,3 @@
-// 1. aumentar
-// 2. construir el arbol con shunting yard
-// 3. ponerle numeros a las hojas (excepto a epsilon)
-// 4. construir las funciones sobre el arbol
-// Refs: https://www.geeksforgeeks.org/regular-expression-to-dfa/
-//       https://www.youtube.com/watch?v=leENeyk1T5M
-
-import { minimizeDFA } from "./DFA";
 import { NFA } from "./NFA";
 import { State } from "./State";
 import { Token } from "./Token";

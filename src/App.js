@@ -173,17 +173,6 @@ abortingMalloc: false,   // Disable aborting on malloc failure
         </div>
       </div>
       <FileDrop/>
-      {/* <hr />
-      <h1>Lab 3</h1>
-
-      <label for="yalex">Seleccione un archivo Yalex: </label>
-      <br />
-      <input type="file" id="yalex" name="yalex" accept=".txt, .yal"></input>
-      <br />
-      <button id="enter-yalex">aceptar</button>
-
-      <h2>Diagrama de transicion de estados:</h2>
-      <Graphviz dot={dotLex} /> */}
     </div>
   );
 }

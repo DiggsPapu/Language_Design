@@ -2,6 +2,7 @@
 
 (* Introducir cualquier header aqui *)
 let delim = [' ''\t''\n']
+let digit = ['A'-'a']
 rule tokens = 
     ws {return otra_cosa}
   | id   (*HOla*)     { return ID }

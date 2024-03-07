@@ -1,31 +1,5 @@
-/**
- * Es el Algoritmo de Shunting yard
- * Clase para guardar la regex de algun modo y poder pasarla a postfix
- *
- * tiene:
- *
- * - una regex
- *
- * - una expresion postfix
- *
- * - si la regex ingresada es valida
- *
- * - una regex con puntos como operadores de concatenacion
- *
- */
-
-import { NFA } from "./NFA";
 import { Token } from "./Token";
 import { TreeNode } from "./TreeNode";
-const regexTokens = {
-  LPAREN: "(",
-  RPAREN: ")",
-  OR: "|",
-  CONCAT: ".",
-  POSITIVE_CLOSURE: "+",
-  KLEENE: "*",
-  BACKSLASH:"\\",
-}
 export class Regex {
   constructor(regex) {
     this.regex = regex;
@@ -42,7 +16,6 @@ export class Regex {
   isOperator(element) {
     return ["|", ".", "?", "*", "+", "(", ")"].includes(element);
   }
-
   // para verificar regex validas, true es valida, false es no valida
   isValid(regex) {
     // ver que no existan . ? + |
@@ -56,18 +29,14 @@ export class Regex {
     let rights = 0;
     // ver si hay casos tipo (. , (+ o similares incorrectos
     let last = "";
-
     for (let i = 0; i < regex.length; i++) {
       const c = regex[i];
-
       if (c === "(") {
         lefts++;
       }
-
       if (c === ")") {
         rights++;
       }
-
       if (i !== 0) {
         last = regex[i - 1];
         // ver errores con parentesis
@@ -84,7 +53,6 @@ export class Regex {
           console.log("hey3");
           return false;
         }
-
         // ver errores con operadores binarios
         if (
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
@@ -110,18 +78,15 @@ export class Regex {
         }
       }
     }
-
     // ver si el ultimo caracter es binario
     if ((regex[regex.length - 1] === "." && (regex[regex.length-2]!=="\\")) || (regex[regex.length - 1] === "|" && (regex[regex.length-2]!=="\\"))) {
       return false;
     }
-
     // ver si existe la misma cantidad de parentesis derechos e izquierdos
     if (lefts !== rights) {
       console.log("Parentesis")
       return false;
     }
-
     // si nada de lo anterior se cumple, se acepta la regex
     return true;
   }
@@ -201,7 +166,7 @@ export class Regex {
     }
     return tokens;
   }
-  insertDotsInRegexTokenizedWithWords(dfaArray: NFA[], regex:String) {
+  insertDotsInRegexTokenizedWithWords(dfaArray, regex) {
     // se necesita la regex a recorrer, y un postfix vacio a construir
     let tokens = [];
     let token = null;
@@ -294,54 +259,6 @@ export class Regex {
     }
     return tokens;
   }
-
-  tokenize(exp){
-    // This list will have the tokens
-    let tokens = [];
-    let token = null;
-    for (let i = 0; i<exp.length; i++){
-      switch(exp[i]){
-        case "*":
-          token = new Token("*", 2);
-          tokens.push(token);
-          break;
-        case "+":
-          token = new Token("+", 2);
-          tokens.push(token);
-          break;
-          case "?":
-            token = new Token("?", 2);
-            tokens.push(token);
-            break;
-        case ".":
-          token = new Token(".", 1);
-          tokens.push(token);
-          break;
-        case "|":
-          token = new Token("|", 0);
-          tokens.push(token);
-          break;
-        case "(":
-          token = new Token("(", -1);
-          tokens.push(token);
-          break;
-        case ")":
-          token = new Token(")", 3);
-          tokens.push(token);
-          break;
-        case "\\":
-          i++;
-          token = new Token(exp[i], -2);
-          tokens.push(token);
-          break;
-        default:
-          token = new Token(exp[i], -2);
-          tokens.push(token);
-          break;  
-      };
-    };
-    return tokens;
-  }
   infixToPostfixTokenized(regexWithDots) {
     // declarar postfix vacia, stack vacio y la procedencia de operadores
     let postfix = [];
@@ -398,17 +315,8 @@ export class Regex {
     let nodeStack = [];
     // posicion del operador actual
     let pos = 1;
-    // aumentar la postfix
-
     // recorrer la postfix para ver que nodo va a construirse
     for (const c of this.postfixTokenized) {
-      // es un operador unario
-      // "|": 0,
-      // ".": 1,
-      // "?": 2,
-      // "*": 2,
-      // "+": 2,
-
       if ((c.value === "*" && c.precedence === 2) || (c.value === "+" && c.precedence === 2) || (c.value === "?" && c.precedence === 2)) {
         // nodo unario
         const node = new TreeNode(c, nodeStack.pop(), null, null);
@@ -431,5 +339,4 @@ export class Regex {
     }
     return [nodeStack.pop(), nodeArray, pos];
   }
-
 }

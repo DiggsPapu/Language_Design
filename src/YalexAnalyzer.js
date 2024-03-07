@@ -1,31 +1,8 @@
-import { NFA } from "./NFA";
 import { Regex } from "./Regex";
 import { SyntaxTree } from "./SyntaxTree";
-import { ThompsonToken } from "./ThompsonToken";
-import { Token, TokenTypes } from "./Token";
-
-const YalexTokens = {
-  NUMBER: "0|1|2|3|4|5|6|7|8|9",
-  CHARACTER: "A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z",
-  SYMBOLS: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z','a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','0', '1', '2', '3', '4', '5', '6', '7', '8', '9','=', ':', ';', '\\+', '-', '\\*', '\\?', '\\.', '\\(', '\\)'],
-  BACKSLASH: "\\",
-  TERMINAL: "((\n)|(\t)|(\r)|( ))",
-  IDENTIFIER: " /^[a-zA-Z]+[0-9]*[a-zA-Z]/",
-  TILDES: "á|é|í|ó|ú",
-  ADDITION: /\+/,
-  SUBTRACTION: /-/,
-  MULTIPLICATION: /\*/,
-  DIVISION: /\//,
-  EXPONENTIATION: /\^/,
-  PARENTHESIS_LEFT: /\(/,
-  PARENTHESIS_RIGHT: /\)/,
-  SPACE: / +/,
-  ENTER: /\n|\r/,  
-  START_DEFINITION: /^/,
-  DEFINITION: /^[a-zA-Z]+[0-9]*[a-zA-Z]/,
-  COMENTARY: /(\*[a-zA-Z0-9_.-]*\*)/,
-  LET: /let += +/,
-};
+import { Token } from "./Token";
+import { TreeNode } from "./TreeNode";
+import { YalexTokens } from "./YalexTokens";
 export class YalexAnalyzer{
     constructor(data){
         this.regex = null;
@@ -38,7 +15,8 @@ export class YalexAnalyzer{
         console.log(this.tokensSet);
         console.log(this.rulesSet);
         console.log(this.analyzedTokens);
-        console.log(this.treeset);
+        console.log(this.treeSet);
+        console.log(this.afdsFinal);
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -421,7 +399,7 @@ export class YalexAnalyzer{
         let token = tokensToEvaluate[k];
         token = token.replace(".", "("+YalexTokens.CHARACTER+")")
         token = token.replace("_", "("+YalexTokens.SYMBOLS.join("|")+")")
-        let isValid = this.isValid(token);
+        let isValid = this.regex.isValid(token);
         // console.log(`${token} is valid?`);
         // console.log(isValid);
         // 
@@ -440,14 +418,14 @@ export class YalexAnalyzer{
               token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
             } else if (c === "'") {
               if ( token[i+1]==="+" || token[i+1] === "*"){
-                token = token.replace(token.slice(i, i+2), "(\\"+token[i+1]+")");
+                token = token.replace(token.slice(i, i+3), "(\\"+token[i+1]+")");
               }
               else{
-                token = token.replace(token.slice(i, i+2), "("+token[i+1]+")");
+                token = token.replace(token.slice(i, i+3), "("+token[i+1]+")");
               }
             }
             // console.log(i)
-            // console.log(token)
+            console.log(token)
           };
         }
         // Reemplazo del old token
@@ -491,8 +469,11 @@ export class YalexAnalyzer{
             for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
               antiTokens.push(String.fromCharCode(m));
             };
-          };
+          }
           // The else must handle errors because cant exist some 9-2 range or 2-2
+          else{
+            throw new Error(`Error: invalid range [${token[i-2]}-${token[i+2]}]`);
+          }
           i+=3;
         } else if (c === "\""){
           i++;
@@ -548,8 +529,11 @@ export class YalexAnalyzer{
             for (let m = initTokenAscii+1; m <= finTokenAscii; m++){
               tokens.push(String.fromCharCode(m));
             };
-          };
+          }
           // The else must handle errors because cant exist some 9-2 range or 2-2
+          else {
+            throw new Error(`Error in position '+${i}+': invalid range [${token[i-2]}-${token[i+2]}]`);
+          };
           i+=3;
         } else if (c === "\""){
           i++;
@@ -559,10 +543,17 @@ export class YalexAnalyzer{
             throw new Error(`Error in position '+${i}+': empty declaration ${token}`);
           }
           while (c!=="\""){
-            tokens.push(c);
-            i++;
-            c=token[i];
-          }
+            if (c==="\\"){
+              let newToken = c + token[i+1];
+              tokens.push(newToken);
+              i+=2;
+              c=token[i];
+            } else {
+              tokens.push(c);
+              i++;
+              c=token[i];
+            }
+          };
         }
         if (token[i]==="]"){
           break;
@@ -574,141 +565,22 @@ export class YalexAnalyzer{
     return [tokens.join("|"), i];
   }
   generateTrees(){
-    this.treeset = [];
+    this.treeSet = [];
+    this.afdsFinal = []
     // console.log(this.tokensSet);
     let keys = Array.from(this.analyzedTokens.keys());
     for (let i = 0; i<keys.length; i++){
       this.regex.regexWithDots = this.analyzedTokens.get(keys[i])[0];
-      console.log(this.regex.regexWithDots)
       this.regex.postfixTokenized = this.regex.infixToPostfixTokenized(this.regex.regexWithDots);
-      console.log(this.regex.postfixTokenized)
+      // console.log(this.regex.postfixTokenized);
       this.tokenTree = this.regex.constructTokenTree();
       this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
-      this.treeset.push(this.ast); 
+      this.treeSet.push(this.ast); 
+      // Se aniade el root de la cabeza con el nombre
+      this.afdsFinal.push(this.ast.generateDirectDFATokens());
+      let newDotNode = new TreeNode(new Token(keys[i], 1),this.treeRoot,null,null);
+      this.ast.nodes.push(newDotNode);
+      this.ast.treeRoot = newDotNode;
     }
-  }
-  // para verificar regex validas, true es valida, false es no valida
-  isValid(regex) {
-    // ver que no existan . ? + |
-    if (regex === ".") return false;
-    if (regex === "?") return false;
-    if (regex === "+") return false;
-    if (regex === "|") return false;
-    if (regex === "*") return false;
-    // ver directamente desde la regex, si se ingresaron mas '(' que ')'
-    // (,)
-    let lefts = 0;
-    let rights = 0;
-    // [,]
-    let leftHooks = 0;
-    let rightHooks = 0;
-    // '' must be a pair
-    let simpleQuotes = 0;
-    // "" must be a pair
-    let doubleQuotes = 0;
-    // ver si hay casos tipo (. , (+ o similares incorrectos
-    let last = "";
-
-    for (let i = 0; i < regex.length; i++) {
-      const c = regex[i];
-
-      if (c === "(") {
-        lefts++;
-      }
-      if (c === ")") {
-        rights++;
-      }
-      if (c === "[") {
-        leftHooks++;
-      }
-      if (c === "]") {
-        rightHooks++;
-      }
-      if (c === "'") {
-        simpleQuotes++;
-      }
-      if (c === "\"") {
-        doubleQuotes++;
-      }
-      if (i !== 0) {
-        last = regex[i - 1];
-        // ver errores con parentesis
-        // antes
-        if (
-          (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
-          (last === "(" && regex[i -2] !== "\\")
-        ) {
-          console.log("parentesis1")
-          return false;
-        }
-        // despues
-        if (c === ")" && (last === "(" || last === "." || last === "|") && regex[i -2] !== "\\") {
-          console.log("parentesis2");
-          return false;
-        }
-        // hooks error
-        // before
-        if (
-          (c === "*" || c === "+" || c === "?" || c === "." || c === "|")&&
-          (last === "[" && regex[i -2] !== "\\")
-        ) {
-          console.log("corchetes1")
-          return false;
-        }
-        // after
-        if (c === "]" && (last === "[" || last === "." || last === "|") && regex[i -2] !== "\\") {
-          console.log("corchetes2");
-          return false;
-        }
-        // ver errores con operadores binarios
-        if (
-          (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
-          (last === "." && regex[i -2] !== "\\")
-        ) {
-          console.log("hey2");
-          return false;
-        }
-        if (
-          (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
-          (last === "|" && regex[i -2] !== "\\")
-        ) {
-          console.log("hey1");
-          return false;
-        }
-      }
-      else {
-        if (
-          (c === "*" || c === "+" || c === "?" || c === "." || c === "|")&&(regex[i-1]!=="\\")
-        ) {
-          console.log("hey0")
-          return false;
-        }
-      }
-    }
-    // ver si el ultimo caracter es binario
-    if ((regex[regex.length - 1] === "." && (regex[regex.length-2]!=="\\")) || (regex[regex.length - 1] === "|" && (regex[regex.length-2]!=="\\"))) {
-      console.log("binario")
-      return false;
-    }
-
-    // ver si existe la misma cantidad de parentesis derechos e izquierdos
-    if (lefts !== rights) {
-      console.log("Parentesis")
-      return false;
-    }
-    if (leftHooks !== rightHooks) {
-      console.log("Hooks")
-      return false;
-    }
-    if (simpleQuotes%2 !== 0) {
-      console.log("Simple Quotes")
-      return false;
-    }
-    if (doubleQuotes%2 !== 0) {
-      console.log("Double Quotes")
-      return false;
-    }
-    // si nada de lo anterior se cumple, se acepta la regex
-    return true;
   };
 };
