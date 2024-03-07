@@ -5,6 +5,7 @@ import { TreeNode } from "./TreeNode";
 import { YalexTokens, asciiUniverses } from "./YalexTokens";
 export class YalexAnalyzer{
     constructor(data){
+        this.ascii = new asciiUniverses();
         this.regex = null;
         this.tokenTree = null;
         this.ast = null;
@@ -19,7 +20,6 @@ export class YalexAnalyzer{
         console.log(this.afdsFinal);
         console.log(this.tokenChange);
         this.createBigTree();
-        this.ascii = new asciiUniverses();
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -765,6 +765,7 @@ export class YalexAnalyzer{
     else{
       regex = regex.replace(regex.slice(i, i+3), "("+regex[i+1]+")");
     }
+    return regex;
   }
   handlingDoubleQuotes(regex, i){
     let originalI = i;
@@ -783,26 +784,65 @@ export class YalexAnalyzer{
     if (i>regex.length){
       throw  new Error(`Error: unclosed double quotes at the end of expression "${originalI}"`);
     }
-    console.log(antiTokens)
+    // console.log(antiTokens)
     let array = regex.split("");
     // console.log(array)
     array[originalI] = "("+antiTokens.join("|")+")";
     // console.log(array)
     array.splice(originalI+1, i-originalI);
-    console.log(array)
+    // console.log(array)
     regex = array.join("");
     return regex;
   }
+  handlingRanges(regex, i){
+    let antiTokens = []
+    let initTokenAscii = regex[i-2];
+    let finTokenAscii = regex[i+2];
+    initTokenAscii = initTokenAscii.charCodeAt(0);
+    finTokenAscii = finTokenAscii.charCodeAt(0);
+    if (initTokenAscii<finTokenAscii){
+      for (let m = initTokenAscii; m <= finTokenAscii; m++){
+        antiTokens.push(String.fromCharCode(m));
+      };
+    }
+    // The else must handle errors because cant exist some 9-2 range or 2-2
+    else{
+      throw new Error(`Error: invalid range [${regex[i-1]}-${regex[i+2]}]`);
+    }
+    //  console.log(antiTokens)
+     let array = regex.split("");
+    //  console.log(array)
+     array[i-3] = "("+antiTokens.join("|")+")";
+    //  console.log(array)
+     array.splice(i-2, 6);
+    //  console.log(array)
+     regex = array.join("");
+    //  console.log(regex)
+     i+=3;
+     return regex;
+  }
+  
   analyzeTokens2(){
   for (let i = 0; i < this.generalRegex.length; i++){
     let c = this.generalRegex[i];
+    // if (c=== "[") {
+    //   this.bracketHandling(this.generalRegex, i);
+    // }
+    // console.log(this.generalRegex[i+2])
+    // console.log(this.generalRegex[i-1])
+    if (c === "-" 
+        && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
+        this.ascii.RANGES.includes(this.generalRegex[i-2])) {
+          this.generalRegex = this.handlingRanges(this.generalRegex, i);
+
+    }
     // Double quotes
     if (c === "\"" && this.generalRegex[i-1]!=="\\") {
       this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
     }
     // Simple quotes
     if (c === "'" && this.generalRegex[i-1]!=="\\") {
-      this.handlingSimpleQuotes(this.generalRegex, i);
+      this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
     }
     
     // let isValid = this.regex.isValid(token);

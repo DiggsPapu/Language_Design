@@ -39,5 +39,6 @@ export class asciiUniverses {
       if (i>=97 && i<=122) this.MINUS.push(String.fromCharCode(i));
       if (i>=47 && i<=58) this.NUMBER.push(String.fromCharCode(i));
     }
+    this.RANGES = [...this.MAYUS, ...this.MINUS, ...this.NUMBER];
   }
 }
