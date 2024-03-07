@@ -777,9 +777,16 @@ export class YalexAnalyzer{
       throw new Error(`Error: empty declaration like "" `);
     }
     while (c!=="\"" && i<regex.length){
-      antiTokens.push(c);
-      i++;
-      c=regex[i];
+      if (c!=="\\"){
+        antiTokens.push(c);
+        i++;
+        c=regex[i];
+      } else {
+        c = c+regex[i+1];
+        antiTokens.push(c);
+        i+=2;
+        c=regex[i];
+      }
     }
     if (i>regex.length){
       throw  new Error(`Error: unclosed double quotes at the end of expression "${originalI}"`);
@@ -823,56 +830,70 @@ export class YalexAnalyzer{
   }
   
   analyzeTokens2(){
-  for (let i = 0; i < this.generalRegex.length; i++){
-    let c = this.generalRegex[i];
-    // if (c=== "[") {
-    //   this.bracketHandling(this.generalRegex, i);
-    // }
-    // console.log(this.generalRegex[i+2])
-    // console.log(this.generalRegex[i-1])
-    if (c === "-" 
-        && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
-        this.ascii.RANGES.includes(this.generalRegex[i-2])) {
-          this.generalRegex = this.handlingRanges(this.generalRegex, i);
-
-    }
-    // Double quotes
-    if (c === "\"" && this.generalRegex[i-1]!=="\\") {
-      this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
-    }
-    // Simple quotes
-    if (c === "'" && this.generalRegex[i-1]!=="\\") {
-      this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
-    }
-    
-    // let isValid = this.regex.isValid(token);
-    // // console.log(`${token} is valid?`);
-    // // console.log(isValid);
-    // // console.log("Token is:"+token);
-    // if (isValid) {
-    //   let originalLength = token.length;
-    //   // console.log(originalLength)
-    //   for (let i = 0; i < originalLength; i++){
-    //     let c = token[i];
-    //     if (c==="["){
-    //       let oldIndex = i;
-    //       let newToken = null;
-    //       let newIndex = 0;
-    //       [newToken, newIndex] = this.handleBrackets(token, i);
-    //       i = newIndex;
-    //       token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
-    //     } else if (c === "'") {
-    //     if ( token[i+1]==="+" || token[i+1] === "*"){
-    //         token = token.replace(token.slice(i, i+3), "(\\"+token[i+1]+")");
-    //       }
-    //     else{
-    //         token = token.replace(token.slice(i, i+3), "("+token[i+1]+")");
-    //       }
-    //     }
-    //     this.generalRegex = token;
-    //   };
-    //   }
+    for (let i = 0; i < this.generalRegex.length; i++){
+      let c = this.generalRegex[i];
+      if (c === "-" 
+          && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
+          this.ascii.RANGES.includes(this.generalRegex[i-2])) {
+            this.generalRegex = this.handlingRanges(this.generalRegex, i);
+      }
+      if (c === "." && this.generalRegex[i-1]!=="\\") {
+        let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+        let array = this.generalRegex.split("");
+        array[i] = "("+characters.join("|")+")";
+        this.generalRegex = array.join("");
+      }
+      // Double quotes
+      if (c === "\"" && this.generalRegex[i-1]!=="\\") {
+        this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
+      }
+      // Simple quotes
+      if (c === "'" && this.generalRegex[i-1]!=="\\") {
+        this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
+      }
     };
     console.log(this.generalRegex);
+    // Handling brackets
+    for (let i = 0; i < this.generalRegex.length; i++){
+      let c = this.generalRegex[i];
+      let originalI = i;
+      if (c === "[" ){
+        let array = this.generalRegex.split("");
+        let parentesisC = 0;
+        while (c!=="]" && i < this.generalRegex.length) {
+          if (c==="\\"){
+            console.log("holis")
+            i++;
+            c = array[i];
+          }
+          if (c === "("){
+            parentesisC++;
+          } else if (c === ")"){
+            parentesisC--;
+          }
+          if (c === ")" && parentesisC === 0 && array[i+1]!=="]"){
+            array[i] = c+"|";
+          }
+          i++;
+          c = array[i];
+          if (c==="]"){
+            break;
+          }
+        }
+        // console.log(array)
+        array.splice(originalI,1);
+        array.splice(i-1,1);
+        this.generalRegex = array.join("");
+      }
+    };
+    console.log(this.generalRegex)
+    let isValid = this.regex.isValid(this.generalRegex);
+    console.log(isValid)
+    this.regex = new Regex(this.generalRegex);
+    this.tokenTree = this.regex.constructTokenTree();
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    console.log(this.ast);
+    this.dfa = this.ast.generateDirectDFATokens();
+    console.log(this.dfa)
   };
 };
