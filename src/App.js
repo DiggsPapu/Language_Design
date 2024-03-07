@@ -1,19 +1,14 @@
 import "./App.css";
 import React, { useState } from "react";
 import { Regex } from "./Regex";
-import { Thompson } from "./Thompson";
 import { ThompsonToken } from "./ThompsonToken";
-// import { SyntaxTree } from "./SyntaxTree";
 import { Graphviz } from "graphviz-react";
-import { generateDirectDFA, NFAToDFA, minimizeDFA, simulateNfa } from "./DFA";
-import { NFA } from "./NFA";
-import { State } from "./State";
+import { NFAToDFA, minimizeDFA } from "./DFA";
 import {
   drawGraphDFA,
   drawGraph,
   drawTreeTokens,
 } from "./drawFunctions";
-import * as trial from "./Trial";
 import { SyntaxTree } from "./SyntaxTree";
 import FileDrop from "./components/FileDrop";
 

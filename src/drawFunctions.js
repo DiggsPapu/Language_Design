@@ -280,34 +280,6 @@ export const drawGraphTokens = (nfa) => {
 
   return dotStr;
 };
-export const drawTree = (tree) =>{
-  let counter = 0;
-  let dotStr = "digraph tree {\n";
-  dotStr += "rankdir=TB;\n";
-  dotStr += 'size="8,5";\n';
-  
-  [dotStr, counter] = drawTreeNode(tree.treeRoot,counter,dotStr);
-  dotStr += "}";
-  return dotStr;
-};
-function drawTreeNode(node, counter, string_graph){
-  if (node !== null){
-    // console.log(node.value)
-    string_graph+=counter+" [label=\""+node.value+"\"];\n";
-    counter++;
-    let copy_c = counter-1;
-    if (node.left !== null){
-      string_graph += "" + copy_c+ " -> " + counter + ";\n";
-      [string_graph,counter] = drawTreeNode(node.left, counter, string_graph);
-    }
-    if (node.right !== null){
-      string_graph += "" + copy_c+ " -> " + counter + ";\n";
-      [string_graph,counter] = drawTreeNode(node.right, counter, string_graph);
-    }
-  };
-  return [string_graph, counter]
-};
-
 
 export const drawTreeTokens = (tree) =>{
   let counter = 0;

@@ -264,16 +264,13 @@ export class SyntaxTree {
   };
   generateDirectDFATokens() {
     this.getAlphabetTokens();
-    const tokens = this.tokens;
     // Aniadir un # al final
-    let lastNode = this.nodes[this.nodes.length - 1];
     let newFinishNode = new TreeNode(new Token("#", -3),null,null,this.maxpos);
     let newDotNode = new TreeNode(new Token(".", 1),this.treeRoot,newFinishNode,null);
     this.nodes.push(newFinishNode);
     this.nodes.push(newDotNode);
     this.treeRoot = newDotNode;
     // hacer el calculo de las funciones para cada nodo del arbol
-    let counter = 0;
     this.nodes.forEach((node) => {
       node.nullable = this.nullableTokens(node);
       node.firstpos = this.firstposTokens(node);

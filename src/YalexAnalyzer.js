@@ -17,6 +17,8 @@ export class YalexAnalyzer{
         console.log(this.analyzedTokens);
         console.log(this.treeSet);
         console.log(this.afdsFinal);
+        console.log(this.tokenChange);
+        this.createBigTree();
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -284,7 +286,6 @@ export class YalexAnalyzer{
     // recorrer cada caracter para construir la regex con puntos
     for (let c = 0; c < regex.length; c++) {
       const element = regex[c];
-
       for (let n = 0; n<dfaArray.length; n++){
         let currentDfa = dfaArray[n];
         [isWord, indexTemp, S] = currentDfa.yalexSimulate(regex, c);
@@ -371,7 +372,7 @@ export class YalexAnalyzer{
   }
   analyzeTokens(){
     // FIRST, GET AFDS TO CHECK IF THEY ARE SOME DEFINITION
-    let keys = Array.from(this.tokensSet.keys())
+    let keys = Array.from(this.tokensSet.keys());
     let afds = []
     this.regex = new Regex(keys[2]);
     this.tokenTree = this.regex.constructTokenTree();
@@ -389,6 +390,7 @@ export class YalexAnalyzer{
     // console.log(afds);
     // deep copy
     this.analyzedTokens = new Map();
+    this.tokenChange = new Map();
     for (let l = 2; l < keys.length; l++){
       this.analyzedTokens.set(keys[l],[...this.tokensSet.get(keys[l])])
     }    
@@ -402,7 +404,6 @@ export class YalexAnalyzer{
         let isValid = this.regex.isValid(token);
         // console.log(`${token} is valid?`);
         // console.log(isValid);
-        // 
         // console.log("Token is:"+token);
         if (isValid) {
           let originalLength = token.length;
@@ -424,8 +425,7 @@ export class YalexAnalyzer{
                 token = token.replace(token.slice(i, i+3), "("+token[i+1]+")");
               }
             }
-            // console.log(i)
-            console.log(token)
+            this.tokenChange.set(key, token);
           };
         }
         // Reemplazo del old token
@@ -582,5 +582,29 @@ export class YalexAnalyzer{
       this.ast.nodes.push(newDotNode);
       this.ast.treeRoot = newDotNode;
     }
+  };
+  createBigTree(){
+    let keys = Array.from(this.rulesSet.keys());
+    this.generalRegex = "("
+    for (let i = 0; i < keys.length; i++){
+      this.generalRegex += "("+keys[i]+")|"
+    };
+    this.generalRegex = this.generalRegex.slice(0, this.generalRegex.length-1);
+    this.generalRegex+= ")";
+    console.log(this.generalRegex);
+    this.generalRegex = "("
+    for (let i = 0; i < keys.length; i++){
+      let regex = this.tokensSet.get(keys[i]);
+      if (regex !== undefined){
+        this.generalRegex += "("+this.tokenChange.get(keys[i])+")|"
+      }
+      else{
+        this.generalRegex += "("+keys[i]+")|"
+      }
+    };
+    this.generalRegex = this.generalRegex.slice(0, this.generalRegex.length-1);
+    this.generalRegex+= ")";
+    console.log(this.generalRegex);
+
   };
 };
