@@ -20,3 +20,32 @@ export const YalexTokens = {
     COMENTARY: /(\*[a-zA-Z0-9_.-]*\*)/,
     LET: /let += +/,
   };
+
+export class asciiUniverses {
+  constructor() {
+    this.getNumberUniverse();
+    this.getLetterUniverse();
+    
+  }
+  getNumberUniverse(){
+    this.NUMBER = []
+    for (let i = 47; i <= 58; i++){
+      this.NUMBER.push(String.fromCharCode(i));
+    }
+  }
+  getUniverse(){
+    this.MAYUS= []
+    this.MINUS=[]
+    this.NUMBER = []
+    this.UNIVERSE = []
+    this.TILDES = ["á","é","í","ó","ú","Á","É","Í","Ó","Ú"]
+    this.MATH = ["+", "-", "*", "/", "^"]
+    this.OPERATORS = ["+", "*", "(",")", "."]
+    for (let i = 0; i<=255; i++){
+      this.UNIVERSE.push(String.fromCharCode(i));
+      if (i>=65 && i<=90) this.MAYUS.push(String.fromCharCode(i));
+      if (i>=97 && i<=122) this.MINUS.push(String.fromCharCode(i));
+      if (i>=47 && i<=58) this.NUMBER.push(String.fromCharCode(i));
+    }
+  }
+}

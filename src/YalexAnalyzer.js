@@ -2,7 +2,7 @@ import { Regex } from "./Regex";
 import { SyntaxTree } from "./SyntaxTree";
 import { Token } from "./Token";
 import { TreeNode } from "./TreeNode";
-import { YalexTokens } from "./YalexTokens";
+import { YalexTokens, asciiUniverses } from "./YalexTokens";
 export class YalexAnalyzer{
     constructor(data){
         this.regex = null;
@@ -19,6 +19,9 @@ export class YalexAnalyzer{
         console.log(this.afdsFinal);
         console.log(this.tokenChange);
         this.createBigTree();
+        this.ascii = new asciiUniverses();
+        console.log(this.ascii.UNIVERSE)
+        console.log(this.ascii.LETTER)
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -510,7 +513,7 @@ export class YalexAnalyzer{
             i+=3;
           }
           else{
-            if (token[i+1]==="+" || token[i+1]==="*") {
+            if (token[i+1]==="+" || token[i+1]==="*" || token[i+1]==="(" || token[i+1]===")") {
               tokens.push("\\"+token[i+1]);
             } else{
               tokens.push(token[i+1]);
@@ -583,100 +586,6 @@ export class YalexAnalyzer{
       this.ast.treeRoot = newDotNode;
     }
   };
-  // createBigTree(){
-    // let keys = Array.from(this.rulesSet.keys());
-    // this.generalRegex = "("
-    // for (let i = 0; i < keys.length; i++){
-    //   this.generalRegex += "("+keys[i]+")|"
-    // };
-  //   this.generalRegex = this.generalRegex.slice(0, this.generalRegex.length-1);
-  //   this.generalRegex+= ")";
-  //   console.log(this.generalRegex);
-  //   this.generalRegex = "("
-  //   for (let i = 0; i < keys.length; i++){
-  //     console.log(keys[i]);
-  //     let regex = this.tokensSet.get(keys[i]);
-  //     if (regex !== undefined){
-  //       this.generalRegex += "("+this.tokenChange.get(keys[i])+")|"
-  //     }
-  //     else{
-  //       let token = keys[i]
-  //       token = token.replace(".", "("+YalexTokens.CHARACTER+")")
-  //       token = token.replace("_", "("+YalexTokens.SYMBOLS.join("|")+")")
-  //       // console.log(`${token} is valid?`);
-  //       // console.log(isValid);
-  //       // console.log("Token is:"+token);
-  //       let originalLength = token.length;
-  //       // console.log(originalLength)
-  //       for (let i = 0; i < originalLength; i++){
-  //         let c = token[i];
-  //         let oldIndex = i;
-  //         let newToken = null;
-  //         let newIndex = 0;
-  //         [newToken, newIndex] = this.handleName(token, i);
-  //         i = newIndex;
-  //         let isValid = this.regex.isValid(newToken);
-  //         if (isValid){
-  //           console.log(newToken)
-  //           token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
-  //         }
-  //       };
-  //       console.log(token)
-  //       this.generalRegex += "("+token+")|"
-  //     };
-  //   };
-  //   this.generalRegex = this.generalRegex.slice(0, this.generalRegex.length-1);
-  //   this.generalRegex+= ")";
-  //   console.log(this.regex.isValid(this.generalRegex))
-  //   console.log(this.generalRegex);
-    // keys = Array.from(this.tokensSet.keys());
-    // let afds = []
-    // this.regex = new Regex(keys[2]);
-    // this.tokenTree = this.regex.constructTokenTree();
-    // this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
-    // // let superdfa = ast.generateDirectDFATokens()
-    // // The first 2 will be ommited bc they are Commentaries and Delimiters
-    // for (let i = 2; i<keys.length; i++){
-    //   this.regex = new Regex(keys[i]);
-    //   this.tokenTree = this.regex.constructTokenTree();
-    //   this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
-    //   afds.push(this.ast.generateDirectDFATokens());
-    //   // superdfa.addAnotherDfa(ast.generateDirectDFATokens());
-    // }
-  //   for (let i = 0; i < this.generalRegex.length; i++){
-  //     let tokens = [];
-  //     let indexAfd = null;
-  //     let isWordChar = false;
-  //     let index = 0;
-  //     let S = null;
-  //     let isWord = false;
-  //     let indexTemp = 0
-  //     for (let n = 0; n<afds.length; n++){
-  //       let currentDfa = afds[n];
-  //       [isWord, indexTemp, S] = currentDfa.yalexSimulate(this.generalRegex, i);
-  //       if (isWord && indexTemp>index){
-  //         isWordChar = isWord;
-  //         index = indexTemp; 
-  //         indexAfd = n;
-  //       };
-  //     };
-  //     if (isWordChar){
-  //       // let newWord = this.generalRegex.slice(i, index+1);
-  //       // let newToken = new Token(newWord, -2);
-  //       // tokens.push(newToken);
-  //       // i = index;
-  //       // isWordChar = false;
-  //       let array = this.generalRegex.split('');
-  //       array[i]= this.tokenChange.get(keys[indexAfd]);
-  //       array.splice(i+1, index+1-i);
-  //       // for (let j = i; i < index+1; j++){
-  //       //   array[j]="";
-  //       // }
-  //       this.generalRegex = array.join('');
-  //     }
-  //   };
-  //   console.log(this.generalRegex);
-  // };
   handleName(token, i){
     let c = token[i];
     let tokens = []
@@ -846,5 +755,45 @@ export class YalexAnalyzer{
       // console.log(`final i: ${i}, ${this.generalRegex}`)
     };
     console.log(this.generalRegex)
+    this.analyzeTokens2();
+  };
+  analyzeTokens2(){
+  for (let k = 0; k < this.generalRegex.length; k++){
+    let token = this.generalRegex[k];
+    token = token.replace(".", "("+YalexTokens.CHARACTER+")")
+    token = token.replace("_", "("+YalexTokens.SYMBOLS.join("|")+")")
+    token = token.replace("'('", "\\(")
+    token = token.replace("')'", "\\)")
+    token = token.replace("'+'", "\\+")
+    token = token.replace("'*'", "\\*")
+    // let isValid = this.regex.isValid(token);
+    // // console.log(`${token} is valid?`);
+    // // console.log(isValid);
+    // // console.log("Token is:"+token);
+    // if (isValid) {
+    //   let originalLength = token.length;
+    //   // console.log(originalLength)
+    //   for (let i = 0; i < originalLength; i++){
+    //     let c = token[i];
+    //     if (c==="["){
+    //       let oldIndex = i;
+    //       let newToken = null;
+    //       let newIndex = 0;
+    //       [newToken, newIndex] = this.handleBrackets(token, i);
+    //       i = newIndex;
+    //       token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
+    //     } else if (c === "'") {
+    //     if ( token[i+1]==="+" || token[i+1] === "*"){
+    //         token = token.replace(token.slice(i, i+3), "(\\"+token[i+1]+")");
+    //       }
+    //     else{
+    //         token = token.replace(token.slice(i, i+3), "("+token[i+1]+")");
+    //       }
+    //     }
+    //     this.generalRegex = token;
+    //   };
+    //   }
+    };
+    console.log(this.generalRegex);
   };
 };
