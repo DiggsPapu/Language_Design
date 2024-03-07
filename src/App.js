@@ -9,11 +9,8 @@ import { generateDirectDFA, NFAToDFA, minimizeDFA, simulateNfa } from "./DFA";
 import { NFA } from "./NFA";
 import { State } from "./State";
 import {
-  getByValue,
-  fixLabels,
   drawGraphDFA,
   drawGraph,
-  drawTree,
   drawTreeTokens,
 } from "./drawFunctions";
 import * as trial from "./Trial";
