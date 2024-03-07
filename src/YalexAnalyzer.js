@@ -28,9 +28,17 @@ const YalexTokens = {
 };
 export class YalexAnalyzer{
     constructor(data){
+        this.regex = null;
+        this.tokenTree = null;
+        this.ast = null;
         this.loadAfdCheckers();
         this.readFile(data);
-        this.analyzeTokens()
+        this.analyzeTokens();
+        this.generateTrees();
+        console.log(this.tokensSet);
+        console.log(this.rulesSet);
+        console.log(this.analyzedTokens);
+        console.log(this.treeset);
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -282,8 +290,6 @@ export class YalexAnalyzer{
           throw Error(`Invalid yalex in position ${i}, character ${data[i]}`);
         }
       }
-      console.log(this.tokensSet);
-      console.log(this.rulesSet);
   };
   isOperator(element) {
     return ["|", ".", "?", "*", "+", "(", ")"].includes(element);
@@ -389,24 +395,28 @@ export class YalexAnalyzer{
     // FIRST, GET AFDS TO CHECK IF THEY ARE SOME DEFINITION
     let keys = Array.from(this.tokensSet.keys())
     let afds = []
-    let regex = new Regex(keys[2]);
-    let tokenTree = regex.constructTokenTree();
-    let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+    this.regex = new Regex(keys[2]);
+    this.tokenTree = this.regex.constructTokenTree();
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
     // let superdfa = ast.generateDirectDFATokens()
     // The first 2 will be ommited bc they are Commentaries and Delimiters
     for (let i = 2; i<keys.length; i++){
-      regex = new Regex(keys[i]);
-      tokenTree = regex.constructTokenTree();
-      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
-      afds.push(ast.generateDirectDFATokens());
+      this.regex = new Regex(keys[i]);
+      this.tokenTree = this.regex.constructTokenTree();
+      this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+      afds.push(this.ast.generateDirectDFATokens());
       // superdfa.addAnotherDfa(ast.generateDirectDFATokens());
     }
     // console.log(superdfa);
     // console.log(afds);
+    // deep copy
+    this.analyzedTokens = new Map();
+    for (let l = 2; l < keys.length; l++){
+      this.analyzedTokens.set(keys[l],[...this.tokensSet.get(keys[l])])
+    }    
     for (let j = 2; j < keys.length; j++){
       let key = keys[j];
       let tokensToEvaluate = this.tokensSet.get(key);
-      let newTokens = [];
       for (let k = 0; k < tokensToEvaluate.length; k++){
         let token = tokensToEvaluate[k];
         token = token.replace(".", "("+YalexTokens.CHARACTER+")")
@@ -415,37 +425,37 @@ export class YalexAnalyzer{
         // console.log(`${token} is valid?`);
         // console.log(isValid);
         // 
-        console.log("Token is:"+token);
-        let originalLength = token.length;
-        console.log(originalLength)
-        for (let i = 0; i < originalLength; i++){
-          let c = token[i];
-          if (c==="["){
-            let oldIndex = i;
-            let newToken = null;
-            let newIndex = 0;
-            [newToken, newIndex] = this.handleBrackets(token, i);
-            i = newIndex;
-            token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
-          } else if (c === "'") {
-            if ( token[i+1]==="+" || token[i+1] === "*"){
-              token = token.replace(token.slice(i, i+2), "(\\"+token[i+1]+")");
+        // console.log("Token is:"+token);
+        if (isValid) {
+          let originalLength = token.length;
+          // console.log(originalLength)
+          for (let i = 0; i < originalLength; i++){
+            let c = token[i];
+            if (c==="["){
+              let oldIndex = i;
+              let newToken = null;
+              let newIndex = 0;
+              [newToken, newIndex] = this.handleBrackets(token, i);
+              i = newIndex;
+              token = token.replace(token.slice(oldIndex, i+1), "("+newToken+")");
+            } else if (c === "'") {
+              if ( token[i+1]==="+" || token[i+1] === "*"){
+                token = token.replace(token.slice(i, i+2), "(\\"+token[i+1]+")");
+              }
+              else{
+                token = token.replace(token.slice(i, i+2), "("+token[i+1]+")");
+              }
             }
-            else{
-              token = token.replace(token.slice(i, i+2), "("+token[i+1]+")");
-            }
-          }
-          
-          // console.log(i)
-          console.log(token)
-        };
+            // console.log(i)
+            // console.log(token)
+          };
+        }
         // Reemplazo del old token
-        this.tokensSet.get(key)[k]=this.insertDotsInRegexTokenizedWithWords(afds,token)
+        this.analyzedTokens.get(key)[k]=this.insertDotsInRegexTokenizedWithWords(afds,token)
       };
     };
-    // console.log(this.tokensSet)
   };
-  handleBrackets(token:String, i){
+  handleBrackets(token, i){
     // pass the [
     i++;
     let c = token[i];
@@ -562,6 +572,20 @@ export class YalexAnalyzer{
       }
     }
     return [tokens.join("|"), i];
+  }
+  generateTrees(){
+    this.treeset = [];
+    // console.log(this.tokensSet);
+    let keys = Array.from(this.analyzedTokens.keys());
+    for (let i = 0; i<keys.length; i++){
+      this.regex.regexWithDots = this.analyzedTokens.get(keys[i])[0];
+      console.log(this.regex.regexWithDots)
+      this.regex.postfixTokenized = this.regex.infixToPostfixTokenized(this.regex.regexWithDots);
+      console.log(this.regex.postfixTokenized)
+      this.tokenTree = this.regex.constructTokenTree();
+      this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+      this.treeset.push(this.ast); 
+    }
   }
   // para verificar regex validas, true es valida, false es no valida
   isValid(regex) {

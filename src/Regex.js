@@ -32,8 +32,7 @@ export class Regex {
     this.valid = this.isValid(regex);
     if (this.valid) {
       this.regexWithDots = this.insertDotsInRegexTokenized();
-      this.postfixTokenized = this.infixToPostfixTokenized();
-      this.augmented = this.regexWithDots + "#";
+      this.postfixTokenized = this.infixToPostfixTokenized(this.regexWithDots);
     } else {
       this.postfix = [];
       console.error("input incorrecto");
@@ -343,13 +342,13 @@ export class Regex {
     };
     return tokens;
   }
-  infixToPostfixTokenized() {
+  infixToPostfixTokenized(regexWithDots) {
     // declarar postfix vacia, stack vacio y la procedencia de operadores
     let postfix = [];
     const operatorStack = [];
     // recorrer la postfix
-    for (let i = 0; i<this.regexWithDots.length; i++) {
-      let c = this.regexWithDots[i];
+    for (let i = 0; i<regexWithDots.length; i++) {
+      let c = regexWithDots[i];
       // si el caracter actual es un operador que no sea parentesis
       if (
           (c.value === "." && c.precedence === 1) || (c.value === "|" && c.precedence === 0)

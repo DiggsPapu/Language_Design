@@ -19,7 +19,7 @@ export class SyntaxTree {
     this.tokens = [("return ID", "ID")];
     this.maxpos = maxpos;
     this.alphabet = null;
-    this.getAlphabet();
+    this.getAlphabetTokens();
   }
   printSet(set){
     let string = "";
@@ -52,13 +52,14 @@ export class SyntaxTree {
   };
   getAlphabetTokens() {
     this.alphabetTokens = [];
+    this.alphabet = [];
     // recorrer la postfix
     for (let i = 0; i < this.regex.regexWithDots.length; i++) {
       const l = this.regex.regexWithDots[i];
       // si es un simbolo, no es una letra del alfabeto
       if ((l.precedence<-1)) {
         // si no se ha agregado a la lista, se agrega la letra
-        if (!this.alphabet.includes(l.value) && (l.value !=="ε") && (l.value !== "\\")) {
+        if (!this.alphabet.includes(l.value) && (l.value !=="ε")) {
           this.alphabet.push(l.value);
         }
       }

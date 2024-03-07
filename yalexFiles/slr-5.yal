@@ -2,7 +2,6 @@
 
 (* Introducir cualquier header aqui *)
 let delim = [' ''\t''\n']
-let ws = delim+
 rule tokens = 
     ws {return otra_cosa}
   | id   (*HOla*)     { return ID }
