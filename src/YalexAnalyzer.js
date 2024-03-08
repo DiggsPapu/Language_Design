@@ -404,8 +404,8 @@ export class YalexAnalyzer{
         i-=2;
         isWordChar = false;
       }
-      else if (c === "[" && insideBrackets1 === 0) insideBrackets1++;
-      else if (c === "]" && insideBrackets1 === 1) insideBrackets1--;
+      else if (c === "[") insideBrackets1++;
+      else if (c === "]") insideBrackets1--;
       // is double quotes
       else if (afdIndex===afds.length-2){
         if (insideBrackets1===0){
@@ -440,8 +440,8 @@ export class YalexAnalyzer{
         array[i] = "("+[...this.ascii.MINUS, ...this.ascii.MAYUS, ...this.ascii.NUMBER, ...this.ascii.PUNCTUATION].join("|")+")"
         this.generalRegex = array.join("");
       }
-      if (insideBrackets1!==1||insideBrackets1!==0){
-        throw  new Error ("Logic error, brackets inside brackets");
+      if (insideBrackets1>1||insideBrackets1<0){
+        throw  new Error ("Logic error, unbalanced brackets");
       }
       // console.log(`final i: ${i}, ${this.generalRegex}`)
     };
@@ -498,8 +498,15 @@ export class YalexAnalyzer{
         array[i] = "(";
         let parentesisC = 0;
         let isComplement = false;
+        let complementArray = []
         let originalI = i;
         while (c!=="]" && i < this.generalRegex.length) {
+          if (isComplement){
+            
+          }
+          if (c === "^"){
+            isComplement = true;
+          }
           if (c==="\\"){
             i++;
             c = array[i];
@@ -519,20 +526,7 @@ export class YalexAnalyzer{
             break;
           }
         }
-        if (isComplement){
-          let complemented = array.slice(originalI , i);
-          let universe = [...this.ascii.MINUS, ...this.ascii.MAYUS, ...this.ascii.NUMBER, ...this.ascii.PUNCTUATION];
-          let newSet = []
-          for (let k = 0; k < universe.length; k++){
-            if (!complemented.has(universe[k])){
-              newSet.push(universe[k]);
-            }
-          };
-          array[originalI]="("+newSet.join("|")+")";
-          array.splice(originalI, i-originalI);
-          this.generalRegex = array.join("");
-        }
-        else this.generalRegex = array.join("");
+        this.generalRegex = array.join("");
       }
     };
     console.log(`After brackets handling:\n${this.generalRegex}`);
