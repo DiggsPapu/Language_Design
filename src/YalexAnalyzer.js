@@ -56,6 +56,7 @@ export class YalexAnalyzer{
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.ruleBodyDFA = ast.generateDirectDFATokens();
       // console.log(this.ruleBodyDFA)
+      
     };
     // Use an async function to wait for the data
     readFile(data) {
@@ -298,8 +299,6 @@ export class YalexAnalyzer{
     }
     // eliminate recursion
     for (let i = 0; i < this.generalRegex.length; i++){
-      let tokens = [];
-      let token = null;
       let isWordChar = false;
       let index = 0;
       let S = null;
@@ -409,29 +408,48 @@ export class YalexAnalyzer{
   }
   
   analyzeTokens2(){
+    let insideBrackets = 0;
     for (let i = 0; i < this.generalRegex.length; i++){
       let c = this.generalRegex[i];
+      
       if (c === "-" 
           && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
-          this.ascii.RANGES.includes(this.generalRegex[i-2])) {
+          this.ascii.RANGES.includes(this.generalRegex[i-2]) && insideBrackets === 1) {
             this.generalRegex = this.handlingRanges(this.generalRegex, i);
       }
+      else if (c === "[" && insideBrackets === 0) insideBrackets++;
+      else if (c === "]" && insideBrackets === 1) insideBrackets--;
       // if (c === "." && this.generalRegex[i-1]!=="\\") {
-      //   let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-      //   let array = this.generalRegex.split("");
-      //   array[i] = "("+characters.join("|")+")";
-      //   this.generalRegex = array.join("");
+        // let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+        // let array = this.generalRegex.split("");
+        // array[i] = "("+characters.join("|")+")";
+        // this.generalRegex = array.join("");
       // }
       // Double quotes
       else if (c === "\"" && this.generalRegex[i-1]!=="\\") {
-        this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
+        if (insideBrackets === 1) this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
+        else if (insideBrackets === 0) {
+          while (this.generalRegex[i] !== "\""){
+            i++;
+          }
+          let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+          let array = this.generalRegex.split("");
+          array[i] = "("+characters.join("|")+")";
+          this.generalRegex = array.join("");
+        };
       }
       // Simple quotes
       else if (c === "'" && this.generalRegex[i-1]!=="\\") {
         this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
       }
       else if (c === "(" || c === ")") continue;
-      else if (c === "_") continue;
+      // Any character
+      else if (c === "_") {
+        let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+        let array = this.generalRegex.split("");
+        array[i] = "("+characters.join("|")+")";
+        this.generalRegex = array.join("");
+      }
     };
     console.log(this.generalRegex);
     // Handling brackets
@@ -474,8 +492,8 @@ export class YalexAnalyzer{
     this.regex = new Regex(this.generalRegex);
     this.tokenTree = this.regex.constructTokenTree();
     this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
-    // console.log(this.ast);
+    console.log(this.ast);
     this.dfa = this.ast.generateDirectDFATokens();
-    // console.log(this.dfa)
+    console.log(this.dfa)
   };
 };
