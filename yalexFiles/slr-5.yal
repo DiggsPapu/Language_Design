@@ -2,9 +2,11 @@
 
 (* Introducir cualquier header aqui *)
 let delim = [' ''\t''\n']
+let delim2 = ['\b''\f']
 let digit = ['A'-'a']
-let digits = digit+
+let digits = digit+"digit"
 rule tokens = 
-    delim {return otra_cosa}
+  delim2
+  |  delim {return otra_cosa}
   | digit   (*HOla*)     { return ID }
   | digits   { return NUMBER }

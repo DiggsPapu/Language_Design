@@ -38,7 +38,7 @@ function FileDrop() {
     setAcceptedFiles(filesWithContent);
     setCombinedContent(content);
     let yalex = new YalexAnalyzer(content);
-    console.log(drawTreeTokens(yalex.ast))
+    // console.log(drawTreeTokens(yalex.ast))
     setTreeGraph(drawTreeTokens(yalex.ast));
   };
 

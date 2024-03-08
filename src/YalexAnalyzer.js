@@ -11,14 +11,17 @@ export class YalexAnalyzer{
         this.ast = null;
         this.loadAfdCheckers();
         this.readFile(data);
+        console.log(this.tokensSet);
+        console.log(this.rulesSet);
         this.createBigTree();
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
-      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\\.|\\+|\\||\\*|,|\\.|-)*( )*\\*\\)");      
+      let regex = new Regex("\\(\\* *("+YalexTokens.TILDES+"|"+YalexTokens.CHARACTER+"|"+YalexTokens.NUMBER+"| |\n|\t|\\.|\\+|\\||\\*|,|\\.|-)*( )*\\*\\)");    
       let tokenTree = regex.constructTokenTree();
       let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.commentaryDFA = ast.generateDirectDFATokens();
+      console.log(this.commentaryDFA)
       // AFD FOR THE DELIMETERS
       regex = new Regex("(( )|\n|\r|\t)+");
       tokenTree = regex.constructTokenTree();
@@ -36,7 +39,7 @@ export class YalexAnalyzer{
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionNameDFA = ast.generateDirectDFATokens();
       // definition definition afd
-      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|=|^|:|;|\\+|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'^')+"+YalexTokens.TERMINAL)
+      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|=|^|:|;|\\+|\t|\b|\f|\r|\n|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\\f|\\b|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\b'|'\\f'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'^')+"+YalexTokens.TERMINAL)
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionDefinitionDFA = ast.generateDirectDFATokens();
@@ -56,7 +59,6 @@ export class YalexAnalyzer{
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.ruleBodyDFA = ast.generateDirectDFATokens();
       // console.log(this.ruleBodyDFA)
-      
     };
     // Use an async function to wait for the data
     readFile(data) {
@@ -126,6 +128,9 @@ export class YalexAnalyzer{
             // A new set is created
             if (!this.tokensSet.has(tokenName)){
               this.tokensSet.set(tokenName, []);
+            }
+            else {
+              throw Error(`The token ${tokenName} has already been defined`);
             }
             let isDefinitionDefinition = false;
             let indexDefinitionDefinition = 0;
@@ -264,6 +269,22 @@ export class YalexAnalyzer{
           throw Error(`Invalid yalex in position ${i}, character ${data[i]}`);
         }
       }
+      let keys = Array.from(this.tokensSet.keys());
+      // REPLACE ALL ESCAPED VALUES
+      for (let i = 0; i < keys.length; i++) {
+        for (let j = 0; j < this.tokensSet.get(keys[i])[0].length; j++){
+          if (this.tokensSet.get(keys[i])[0][j-1] === "\\" && 
+          (this.tokensSet.get(keys[i])[0][j] === "n"||this.tokensSet.get(keys[i])[0][j] === "t"||this.tokensSet.get(keys[i])[0][i] === "r"||this.tokensSet.get(keys[i])[0][j] === "b"||this.tokensSet.get(keys[i])[0][j] === "f")){
+            this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\n", "\n");
+            this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\t", "\t");
+            this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\r", "\r");
+            this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\b", "\b");
+            this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\f", "\f");
+          };
+        };
+      };
+      
+      console.log(this.tokensSet);
   };
   createBigTree(){
     // Get the general regex
@@ -297,7 +318,21 @@ export class YalexAnalyzer{
       this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
       afds.push(this.ast.generateDirectDFATokens());
     }
+    // AFD FORT THE LEXER
+    // " AFD for strings or inside brackets
+    this.regex = new Regex(this.ascii.DOUBLE_QUOTES);
+    this.tokenTree = this.regex.constructTokenTree();
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    afds.push(this.ast.generateDirectDFATokens());
+    // ' AFD
+    this.regex = new Regex(this.ascii.SIMPLE_QUOTES);
+    this.tokenTree = this.regex.constructTokenTree();
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    afds.push(this.ast.generateDirectDFATokens());
+    console.log(afds[afds.length-2])
+    console.log(afds[afds.length-1])
     // eliminate recursion
+    let insideBrackets1 = 0;
     for (let i = 0; i < this.generalRegex.length; i++){
       let isWordChar = false;
       let index = 0;
@@ -305,6 +340,7 @@ export class YalexAnalyzer{
       let isWord = false;
       let indexTemp = 0;
       let afdIndex = 0;
+      let c = this.generalRegex[i];
       // console.log(this.generalRegex[i])
       // Detect if there is a recursion
       // console.log(`original i: ${i}, ${this.generalRegex}`)
@@ -317,21 +353,120 @@ export class YalexAnalyzer{
           afdIndex = n;
         };
       };
-      if (isWordChar){
+      // is recursive
+      if (isWordChar && afdIndex<afds.length-2 && insideBrackets1 === 0){
         let array = this.generalRegex.split('');
-        // console.log(keys[afdIndex+2])
-        // console.log(this.tokensSet.get(keys[afdIndex+2]))
         array[i] = "("+this.tokensSet.get(keys[afdIndex+2])+")";
         array.splice(i+1, index-i);
         this.generalRegex = array.join('');
         // Esto sirve para analizar el nuevo string para detectar si hay otra recursion a solucionar
         i-=2;
         isWordChar = false;
-      };
+      }
+      else if (c === "[" && insideBrackets1 === 0) insideBrackets1++;
+      else if (c === "]" && insideBrackets1 === 1) insideBrackets1--;
+      // is double quotes
+      else if (afdIndex===afds.length-2){
+        console.log("entro a double quotes")
+        i = index;
+        isWordChar = false;
+      }
+       // is simple quotes
+       else if (afdIndex===afds.length-1){
+        console.log(`entro a simple quotes ${this.generalRegex[index-1]}`)
+        i = index;
+        isWordChar = false;
+      }
       // console.log(`final i: ${i}, ${this.generalRegex}`)
     };
-    console.log(this.generalRegex)
-    this.analyzeTokens2();
+    console.log(this.generalRegex);
+    // General handling
+    let insideBrackets = 0;
+    for (let i = 0; i < this.generalRegex.length; i++){
+      let c = this.generalRegex[i];
+      if (c === "-" 
+          && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
+          this.ascii.RANGES.includes(this.generalRegex[i-2]) && insideBrackets === 1) {
+            this.generalRegex = this.handlingRanges(this.generalRegex, i);
+      }
+      else if (c === "[" && insideBrackets === 0) insideBrackets++;
+      else if (c === "]" && insideBrackets === 1) insideBrackets--;
+      // if (c === "." && this.generalRegex[i-1]!=="\\") {
+        // let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+        // let array = this.generalRegex.split("");
+        // array[i] = "("+characters.join("|")+")";
+        // this.generalRegex = array.join("");
+      // }
+      // Double quotes
+      else if (c === "\"" && this.generalRegex[i-1]!=="\\") {
+        if (insideBrackets === 1) this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
+        else if (insideBrackets === 0) {
+          while (this.generalRegex[i] !== "\""){
+            i++;
+          }
+          let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+          let array = this.generalRegex.split("");
+          array[i] = "("+characters.join("|")+")";
+          this.generalRegex = array.join("");
+        };
+      }
+      // Simple quotes
+      else if (c === "'" && this.generalRegex[i-1]!=="\\") {
+        this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
+      }
+      else if (c === "(" || c === ")") continue;
+      // Any character
+      else if (c === "_") {
+        let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+        let array = this.generalRegex.split("");
+        array[i] = "("+characters.join("|")+")";
+        this.generalRegex = array.join("");
+      }
+    };
+    console.log(`After general handling:\n${this.generalRegex}`);
+    // Handling brackets
+    for (let i = 0; i < this.generalRegex.length; i++){
+      let c = this.generalRegex[i];
+      let originalI = i;
+      if (c === "[" ){
+        let array = this.generalRegex.split("");
+        let parentesisC = 0;
+        while (c!=="]" && i < this.generalRegex.length) {
+          if (c==="\\"){
+            i++;
+            c = array[i];
+          }
+          if (c === "("){
+            parentesisC++;
+          } else if (c === ")"){
+            parentesisC--;
+          }
+          if (c === ")" && parentesisC === 0 && array[i+1]!=="]"){
+            array[i] = c+"|";
+          }
+          i++;
+          c = array[i];
+          if (c==="]"){
+            break;
+          }
+        }
+        // console.log(array)
+        array.splice(originalI,1);
+        array.splice(i-1,1);
+        this.generalRegex = array.join("");
+      }
+    };
+    console.log(`After brackets handling:\n${this.generalRegex}`);
+    if (!this.regex.isValid(this.generalRegex)){
+      throw  new Error('Invalid regex');
+    };
+    // console.log(isValid)
+    this.regex = new Regex(this.generalRegex);
+    this.tokenTree = this.regex.constructTokenTree();
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    console.log(this.ast);
+    this.dfa = this.ast.generateDirectDFATokens();
+    console.log(this.dfa)
   };
   handlingSimpleQuotes(regex, i){
     if ( regex[i+1]==="+" || regex[i+1] === "*" || regex[i+1] === "." || regex[i+1] === "(" || regex[i+1] === ")"){
@@ -406,94 +541,4 @@ export class YalexAnalyzer{
      i+=3;
      return regex;
   }
-  
-  analyzeTokens2(){
-    let insideBrackets = 0;
-    for (let i = 0; i < this.generalRegex.length; i++){
-      let c = this.generalRegex[i];
-      
-      if (c === "-" 
-          && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
-          this.ascii.RANGES.includes(this.generalRegex[i-2]) && insideBrackets === 1) {
-            this.generalRegex = this.handlingRanges(this.generalRegex, i);
-      }
-      else if (c === "[" && insideBrackets === 0) insideBrackets++;
-      else if (c === "]" && insideBrackets === 1) insideBrackets--;
-      // if (c === "." && this.generalRegex[i-1]!=="\\") {
-        // let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-        // let array = this.generalRegex.split("");
-        // array[i] = "("+characters.join("|")+")";
-        // this.generalRegex = array.join("");
-      // }
-      // Double quotes
-      else if (c === "\"" && this.generalRegex[i-1]!=="\\") {
-        if (insideBrackets === 1) this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
-        else if (insideBrackets === 0) {
-          while (this.generalRegex[i] !== "\""){
-            i++;
-          }
-          let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-          let array = this.generalRegex.split("");
-          array[i] = "("+characters.join("|")+")";
-          this.generalRegex = array.join("");
-        };
-      }
-      // Simple quotes
-      else if (c === "'" && this.generalRegex[i-1]!=="\\") {
-        this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
-      }
-      else if (c === "(" || c === ")") continue;
-      // Any character
-      else if (c === "_") {
-        let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-        let array = this.generalRegex.split("");
-        array[i] = "("+characters.join("|")+")";
-        this.generalRegex = array.join("");
-      }
-    };
-    console.log(this.generalRegex);
-    // Handling brackets
-    for (let i = 0; i < this.generalRegex.length; i++){
-      let c = this.generalRegex[i];
-      let originalI = i;
-      if (c === "[" ){
-        let array = this.generalRegex.split("");
-        let parentesisC = 0;
-        while (c!=="]" && i < this.generalRegex.length) {
-          if (c==="\\"){
-            i++;
-            c = array[i];
-          }
-          if (c === "("){
-            parentesisC++;
-          } else if (c === ")"){
-            parentesisC--;
-          }
-          if (c === ")" && parentesisC === 0 && array[i+1]!=="]"){
-            array[i] = c+"|";
-          }
-          i++;
-          c = array[i];
-          if (c==="]"){
-            break;
-          }
-        }
-        // console.log(array)
-        array.splice(originalI,1);
-        array.splice(i-1,1);
-        this.generalRegex = array.join("");
-      }
-    };
-    // console.log(this.generalRegex)
-    if (!this.regex.isValid(this.generalRegex)){
-      throw  new Error('Invalid regex');
-    };
-    // console.log(isValid)
-    this.regex = new Regex(this.generalRegex);
-    this.tokenTree = this.regex.constructTokenTree();
-    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
-    console.log(this.ast);
-    this.dfa = this.ast.generateDirectDFATokens();
-    console.log(this.dfa)
-  };
 };
