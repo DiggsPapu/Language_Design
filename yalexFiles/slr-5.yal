@@ -5,10 +5,14 @@
  
 let delim = [' ''\t''\n']
 let delim2 = ['\b']
-let digit = ['A'-'a']
+let digit = ['0'-'9']
 let digits = digit+"digit"
 rule tokens = 
-  delim2
-  | [' ''\b''\r']
+  ["hola"]
   | ";="
+  | "fjdskfjlkdsf"
+  | digit
+  | delim(delim2)
+  | ['+''-']
+  
   {trailer algo}

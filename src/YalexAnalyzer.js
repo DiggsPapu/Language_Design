@@ -13,7 +13,7 @@ export class YalexAnalyzer{
         this.readFile(data);
         console.log(this.tokensSet);
         console.log(this.rulesSet);
-        // this.createBigTree();
+        this.createBigTree();
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -155,7 +155,7 @@ export class YalexAnalyzer{
             let indexDefinitionDefinition = 0;
             // For passing =
             i++;
-            console.log(`Start definition ${data[i]}${data[i+1]}${data[i+2]}${data[i+3]}${data[i+4]}`);
+            // console.log(`Start definition ${data[i]}${data[i+1]}${data[i+2]}${data[i+3]}${data[i+4]}`);
             // console.log(this.definitionDefinitionDFA);      
             [isDefinitionDefinition, indexDefinitionDefinition, S] = this.definitionDefinitionDFA.yalexSimulate(data, i);
             // console.log(this.definitionDefinitionDFA);
@@ -294,10 +294,10 @@ export class YalexAnalyzer{
           throw Error(`Invalid yalex in position ${i}, character ${data[i]}`);
         }
       }
-      console.log(this.tokensSet)
-      console.log(this.rulesSet);
+      // console.log(this.tokensSet)
+      // console.log(this.rulesSet);
       let keys = Array.from(this.tokensSet.keys());
-      console.log(keys)
+      // console.log(keys)
       // REPLACE ALL ESCAPED VALUES
       for (let i = 4; i < keys.length; i++) {
         for (let j = 0; j < this.tokensSet.get(keys[i])[0].length; j++){
@@ -308,6 +308,7 @@ export class YalexAnalyzer{
             this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\r", "\r");
             this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\b", "\b");
             this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\f", "\f");
+            this.tokensSet.get(keys[i])[0] = this.tokensSet.get(keys[i])[0].replace("\\s", "\s");
           };
         };
       };
@@ -339,7 +340,7 @@ export class YalexAnalyzer{
     this.tokenTree = this.regex.constructTokenTree();
     this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
     // The first 2 will be ommited bc they are Commentaries and Delimiters
-    for (let i = 2; i<keys.length; i++){
+    for (let i = 4; i<keys.length; i++){
       this.regex = new Regex(keys[i]);
       this.tokenTree = this.regex.constructTokenTree();
       this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
@@ -354,6 +355,7 @@ export class YalexAnalyzer{
         this.generalRegex = this.generalRegex.replace("\\r", "\r");
         this.generalRegex = this.generalRegex.replace("\\b", "\b");
         this.generalRegex = this.generalRegex.replace("\\f", "\f");
+        this.generalRegex = this.generalRegex.replace("\\s", "\s");
       };
     };
     // AFD FORT THE LEXER
@@ -367,8 +369,8 @@ export class YalexAnalyzer{
     this.tokenTree = this.regex.constructTokenTree();
     this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
     afds.push(this.ast.generateDirectDFATokens());
-    console.log(afds[afds.length-2])
-    console.log(afds[afds.length-1])
+    // console.log(afds[afds.length-2])
+    // console.log(afds[afds.length-1])
     // eliminate recursion
     let insideBrackets1 = 0;
     for (let i = 0; i < this.generalRegex.length; i++){
@@ -394,9 +396,10 @@ export class YalexAnalyzer{
       // is recursive
       if (isWordChar && afdIndex<afds.length-2 && insideBrackets1 === 0){
         let array = this.generalRegex.split('');
-        array[i] = "("+this.tokensSet.get(keys[afdIndex+2])+")";
+        array[i] = "("+this.tokensSet.get(keys[afdIndex+4])+")";
         array.splice(i+1, index-i);
         this.generalRegex = array.join('');
+        console.log(`recursive detected ${this.generalRegex}`)
         // Esto sirve para analizar el nuevo string para detectar si hay otra recursion a solucionar
         i-=2;
         isWordChar = false;
@@ -405,63 +408,80 @@ export class YalexAnalyzer{
       else if (c === "]" && insideBrackets1 === 1) insideBrackets1--;
       // is double quotes
       else if (afdIndex===afds.length-2){
-        console.log("entro a double quotes")
+        if (insideBrackets1===0){
+          let array = this.generalRegex.split('');
+          array[i] = "("+array.slice(i+1, index).join("")+")"
+          array.splice(i+1, index-i);
+          this.generalRegex = array.join('');
+        }
+        else if (insideBrackets1 === 1) this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
         i = index;
         isWordChar = false;
+        console.log(`entro a double quotes: ${this.generalRegex}`)
+      }
+      // Is a range
+      else if (c === "-" 
+      && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
+      this.ascii.RANGES.includes(this.generalRegex[i-2]) && insideBrackets1 === 1) {
+        this.generalRegex = this.handlingRanges(this.generalRegex, i);
+        console.log(`entro a range: ${this.generalRegex}`)
       }
        // is simple quotes
        else if (afdIndex===afds.length-1){
-        console.log(`entro a simple quotes ${this.generalRegex[index-1]}`)
+        this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
+        console.log(index)
+        console.log(`${this.generalRegex[index-2]}${this.generalRegex[index-1]}${this.generalRegex[index]}${this.generalRegex[index+1]}`)
+        console.log(`entro a simple quotes ${this.generalRegex}`)
         i = index;
         isWordChar = false;
-      }
+      } 
       // console.log(`final i: ${i}, ${this.generalRegex}`)
     };
     console.log(this.generalRegex);
     // General handling
-    let insideBrackets = 0;
-    for (let i = 0; i < this.generalRegex.length; i++){
-      let c = this.generalRegex[i];
-      if (c === "-" 
-          && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
-          this.ascii.RANGES.includes(this.generalRegex[i-2]) && insideBrackets === 1) {
-            this.generalRegex = this.handlingRanges(this.generalRegex, i);
-      }
-      else if (c === "[" && insideBrackets === 0) insideBrackets++;
-      else if (c === "]" && insideBrackets === 1) insideBrackets--;
-      // if (c === "." && this.generalRegex[i-1]!=="\\") {
-        // let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-        // let array = this.generalRegex.split("");
-        // array[i] = "("+characters.join("|")+")";
-        // this.generalRegex = array.join("");
+    // let insideBrackets = 0;
+    // for (let i = 0; i < this.generalRegex.length; i++){
+    //   let c = this.generalRegex[i];
+      // if (c === "-" 
+      //     && this.ascii.RANGES.includes(this.generalRegex[i+2]) && 
+      //     this.ascii.RANGES.includes(this.generalRegex[i-2]) && insideBrackets === 1) {
+      //       this.generalRegex = this.handlingRanges(this.generalRegex, i);
       // }
-      // Double quotes
-      else if (c === "\"" && this.generalRegex[i-1]!=="\\") {
-        if (insideBrackets === 1) this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
-        else if (insideBrackets === 0) {
-          while (this.generalRegex[i] !== "\""){
-            i++;
-          }
-          let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-          let array = this.generalRegex.split("");
-          array[i] = "("+characters.join("|")+")";
-          this.generalRegex = array.join("");
-        };
-      }
-      // Simple quotes
-      else if (c === "'" && this.generalRegex[i-1]!=="\\") {
-        this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
-      }
-      else if (c === "(" || c === ")") continue;
-      // Any character
-      else if (c === "_") {
-        let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-        let array = this.generalRegex.split("");
-        array[i] = "("+characters.join("|")+")";
-        this.generalRegex = array.join("");
-      }
-    };
-    console.log(`After general handling:\n${this.generalRegex}`);
+    //   else if (c === "[" && insideBrackets === 0) insideBrackets++;
+    //   else if (c === "]" && insideBrackets === 1) insideBrackets--;
+    //   // if (c === "." && this.generalRegex[i-1]!=="\\") {
+    //     // let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+    //     // let array = this.generalRegex.split("");
+    //     // array[i] = "("+characters.join("|")+")";
+    //     // this.generalRegex = array.join("");
+    //   // }
+    //   // Double quotes
+    //   else if (c === "\"" && this.generalRegex[i-1]!=="\\") {
+    //     if (insideBrackets === 1) this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
+    //     else if (insideBrackets === 0) {
+    //       while (this.generalRegex[i] !== "\""){
+    //         i++;
+    //       }
+    //       let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+    //       let array = this.generalRegex.split("");
+    //       array[i] = "("+characters.join("|")+")";
+    //       this.generalRegex = array.join("");
+    //     };
+    //   }
+    //   // Simple quotes
+      // else if (c === "'" && this.generalRegex[i-1]!=="\\") {
+      //   this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
+      // }
+    //   else if (c === "(" || c === ")") continue;
+    //   // Any character
+    //   else if (c === "_") {
+    //     let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+    //     let array = this.generalRegex.split("");
+    //     array[i] = "("+characters.join("|")+")";
+    //     this.generalRegex = array.join("");
+    //   }
+    // };
+    // console.log(`After general handling:\n${this.generalRegex}`);
     // Handling brackets
     for (let i = 0; i < this.generalRegex.length; i++){
       let c = this.generalRegex[i];
@@ -507,6 +527,7 @@ export class YalexAnalyzer{
     console.log(this.dfa)
   };
   handlingSimpleQuotes(regex, i){
+    console.log(i)
     if ( regex[i+1]==="+" || regex[i+1] === "*" || regex[i+1] === "." || regex[i+1] === "(" || regex[i+1] === ")"){
       regex = regex.replace(this.generalRegex.slice(i, i+3), "(\\"+regex[i+1]+")");
     }
@@ -516,6 +537,7 @@ export class YalexAnalyzer{
     else{
       regex = regex.replace(regex.slice(i, i+3), "("+regex[i+1]+")");
     }
+    console.log(i)
     return regex;
   }
   handlingDoubleQuotes(regex, i){
