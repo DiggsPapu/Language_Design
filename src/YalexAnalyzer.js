@@ -26,6 +26,12 @@ export class YalexAnalyzer{
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.delimDFA = ast.generateDirectDFATokens();
+      // AFD FOR THE HEADER
+      regex = new Regex(this.ascii.HEADER);
+      tokenTree = regex.constructTokenTree();
+      ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+      this.headerDFA = ast.generateDirectDFATokens();
+      console.log(this.headerDFA)
       // AFD'S FOR THE DEFINITION
       // Let +
       regex = new Regex("let +");
@@ -67,15 +73,19 @@ export class YalexAnalyzer{
     readFile(data) {
       let isCommentary = false;
       let isDelim = false;
+      let isHeader = false;
       let isLet = false;
       let startRuleSection = false;
       let indexComentary = 0;
       let indexDelim = 0;
+      let indexHeader = 0;
       let indexLet = 0;
       let indexStartRule = 0;
       this.tokensSet = new Map();
       this.tokensSet.set("COMMENTARY", []);
       this.tokensSet.set("DELIMITERS", []);
+      this.tokensSet.set("HEADER", []);
+      this.tokensSet.set("TRAILER", []);
       this.rulesSet = new Map();
       let S = null;
       // Handle EOF
@@ -84,6 +94,8 @@ export class YalexAnalyzer{
       for (i; i<data.length; i++){
         [isCommentary, indexComentary, S] = this.commentaryDFA.yalexSimulate(data, i);
         [isDelim, indexDelim, S] = this.delimDFA.yalexSimulate(data, i);
+        // console.log("start header:")
+        [isHeader, indexHeader, S] = this.headerDFA.yalexSimulate(data, i);
         [isLet, indexLet, S] = this.letDFA.yalexSimulate(data, i);
         [startRuleSection, indexStartRule, S] = this.startRuleDFA.yalexSimulate(data, i);
         // It is a space or some kinda symbol
@@ -105,6 +117,10 @@ export class YalexAnalyzer{
           }
           definition=data[indexComentary]+definition;
           this.tokensSet.get("COMMENTARY").push(definition);
+        }
+        else if (isHeader){
+          this.tokensSet.get("HEADER").push(data.slice(i, indexHeader+1));
+          i = indexHeader+1;
         }
         else if (isLet){
           i = indexLet;
@@ -178,6 +194,7 @@ export class YalexAnalyzer{
           let insideRuleDefinition = false;
           let ruleName = null;
           let canStartNewRuleSection = false;
+          isHeader = false;
           // The +1 its bc is in = position
           for (i=indexStartRule+1; i < data.length; i++){
             [isCommentary, indexComentary, S] = this.commentaryDFA.yalexSimulate(data, i);
@@ -185,6 +202,7 @@ export class YalexAnalyzer{
             [isRuleName, indexRuleName, S] = this.ruleNameDFA.yalexSimulate(data, i);
             // console.log("tryRuleBody");
             [isRuleBody, indexRuleBody, S] = this.ruleBodyDFA.yalexSimulate(data, i);
+            [isHeader, indexHeader, S] = this.headerDFA.yalexSimulate(data, i);
             // It is a space or some kinda symbol
             if (isDelim){
               // console.log("isDelim");
@@ -204,6 +222,10 @@ export class YalexAnalyzer{
               }
               definition=data[indexComentary]+definition;
               this.tokensSet.get("COMMENTARY").push(definition);
+            }
+            else if (isHeader && canStartNewRuleSection){
+              this.tokensSet.get("TRAILER").push(data.slice(i, indexHeader+1));
+              i = indexHeader+1;
             }
             // Another rule section starts so this is the only way to change the rule name back to null and set false
             else if (data[i]==="|" && canStartNewRuleSection) {
@@ -277,7 +299,7 @@ export class YalexAnalyzer{
       let keys = Array.from(this.tokensSet.keys());
       console.log(keys)
       // REPLACE ALL ESCAPED VALUES
-      for (let i = 2; i < keys.length; i++) {
+      for (let i = 4; i < keys.length; i++) {
         for (let j = 0; j < this.tokensSet.get(keys[i])[0].length; j++){
           if (this.tokensSet.get(keys[i])[0][j-1] === "\\" && 
           (this.tokensSet.get(keys[i])[0][j] === "n"||this.tokensSet.get(keys[i])[0][j] === "t"||this.tokensSet.get(keys[i])[0][i] === "r"||this.tokensSet.get(keys[i])[0][j] === "b"||this.tokensSet.get(keys[i])[0][j] === "f")){

@@ -1,4 +1,8 @@
-
+{import
+ anything}
+ {import anything}
+ {import "anything"}
+ 
 let delim = [' ''\t''\n']
 let delim2 = ['\b']
 let digit = ['A'-'a']
@@ -7,3 +11,4 @@ rule tokens =
   delim2
   | [' ''\b''\r']
   | ";="
+  {trailer algo}

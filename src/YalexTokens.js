@@ -46,10 +46,12 @@ export class asciiUniverses {
     }
     this.RANGES = [...this.MAYUS, ...this.MINUS, ...this.NUMBER];
     this.DOUBLE_QUOTES = ["\"(", this.RANGES.join("|"),"|", this.MATH.join("|"), "|",this.PUNCTUATION.join("|"), "|", this.ESCAPE_CHARACTERS.join("|"),"| )+\""].join("");
-    console.log(this.DOUBLE_QUOTES);
+    // console.log(this.DOUBLE_QUOTES);
     this.SIMPLE_QUOTES = ["'(", this.RANGES.join("|"), "|", this.MATH.join("|"), "|", this.ESCAPE_CHARACTERS.join("|"),"|", this.PUNCTUATION.join("|"), "| )'"].join("");
-    console.log(this.SIMPLE_QUOTES);
+    // console.log(this.SIMPLE_QUOTES);
     this.DEFINITION_DEFINITION = ["( )*(",this.RANGES.join("|"), this.MATH.join("|"), "|", this.DOUBLE_QUOTES, "|", this.SIMPLE_QUOTES, "|", this.OPERATORS.join("|"), "|", this.BRACKETS.join("|"),"|_)+", this.TERMINAL ].join("")
-    console.log(this.DEFINITION_DEFINITION)
+    // console.log(this.DEFINITION_DEFINITION)
+    this.HEADER = ["{( )*(",this.RANGES.join("|"), this.MATH.join("|"), "|", this.DOUBLE_QUOTES, "|", this.SIMPLE_QUOTES, "|", this.OPERATORS.join("|"), "|", this.BRACKETS.join("|"),"|", ["\n", "\t", "\r"].join("|"),"| |_)+}" ].join("")
+    console.log(this.HEADER)
   }
 }
