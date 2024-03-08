@@ -440,6 +440,9 @@ export class YalexAnalyzer{
         array[i] = "("+[...this.ascii.MINUS, ...this.ascii.MAYUS, ...this.ascii.NUMBER, ...this.ascii.PUNCTUATION].join("|")+")"
         this.generalRegex = array.join("");
       }
+      if (insideBrackets1!==1||insideBrackets1!==0){
+        throw  new Error ("Logic error, brackets inside brackets");
+      }
       // console.log(`final i: ${i}, ${this.generalRegex}`)
     };
     console.log(this.generalRegex);
@@ -494,6 +497,8 @@ export class YalexAnalyzer{
         let array = this.generalRegex.split("");
         array[i] = "(";
         let parentesisC = 0;
+        let isComplement = false;
+        let originalI = i;
         while (c!=="]" && i < this.generalRegex.length) {
           if (c==="\\"){
             i++;
@@ -514,7 +519,20 @@ export class YalexAnalyzer{
             break;
           }
         }
-        this.generalRegex = array.join("");
+        if (isComplement){
+          let complemented = array.slice(originalI , i);
+          let universe = [...this.ascii.MINUS, ...this.ascii.MAYUS, ...this.ascii.NUMBER, ...this.ascii.PUNCTUATION];
+          let newSet = []
+          for (let k = 0; k < universe.length; k++){
+            if (!complemented.has(universe[k])){
+              newSet.push(universe[k]);
+            }
+          };
+          array[originalI]="("+newSet.join("|")+")";
+          array.splice(originalI, i-originalI);
+          this.generalRegex = array.join("");
+        }
+        else this.generalRegex = array.join("");
       }
     };
     console.log(`After brackets handling:\n${this.generalRegex}`);
