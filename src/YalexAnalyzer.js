@@ -435,6 +435,11 @@ export class YalexAnalyzer{
         i = index;
         isWordChar = false;
       } 
+      else if (c === "_"){
+        let array = this.generalRegex.split("")
+        array[i] = "("+[...this.ascii.MINUS, ...this.ascii.MAYUS, ...this.ascii.NUMBER, ...this.ascii.PUNCTUATION].join("|")+")"
+        this.generalRegex = array.join("");
+      }
       // console.log(`final i: ${i}, ${this.generalRegex}`)
     };
     console.log(this.generalRegex);
@@ -485,9 +490,9 @@ export class YalexAnalyzer{
     // Handling brackets
     for (let i = 0; i < this.generalRegex.length; i++){
       let c = this.generalRegex[i];
-      let originalI = i;
       if (c === "[" ){
         let array = this.generalRegex.split("");
+        array[i] = "(";
         let parentesisC = 0;
         while (c!=="]" && i < this.generalRegex.length) {
           if (c==="\\"){
@@ -505,12 +510,10 @@ export class YalexAnalyzer{
           i++;
           c = array[i];
           if (c==="]"){
+            array[i] = ")"
             break;
           }
         }
-        // console.log(array)
-        array.splice(originalI,1);
-        array.splice(i-1,1);
         this.generalRegex = array.join("");
       }
     };
