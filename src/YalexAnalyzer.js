@@ -416,20 +416,22 @@ export class YalexAnalyzer{
           this.ascii.RANGES.includes(this.generalRegex[i-2])) {
             this.generalRegex = this.handlingRanges(this.generalRegex, i);
       }
-      if (c === "." && this.generalRegex[i-1]!=="\\") {
-        let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
-        let array = this.generalRegex.split("");
-        array[i] = "("+characters.join("|")+")";
-        this.generalRegex = array.join("");
-      }
+      // if (c === "." && this.generalRegex[i-1]!=="\\") {
+      //   let characters = [...this.ascii.MAYUS, ...this.ascii.MINUS];
+      //   let array = this.generalRegex.split("");
+      //   array[i] = "("+characters.join("|")+")";
+      //   this.generalRegex = array.join("");
+      // }
       // Double quotes
-      if (c === "\"" && this.generalRegex[i-1]!=="\\") {
+      else if (c === "\"" && this.generalRegex[i-1]!=="\\") {
         this.generalRegex = this.handlingDoubleQuotes(this.generalRegex, i);
       }
       // Simple quotes
-      if (c === "'" && this.generalRegex[i-1]!=="\\") {
+      else if (c === "'" && this.generalRegex[i-1]!=="\\") {
         this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
       }
+      else if (c === "(" || c === ")") continue;
+      else if (c === "_") continue;
     };
     console.log(this.generalRegex);
     // Handling brackets
@@ -464,14 +466,16 @@ export class YalexAnalyzer{
         this.generalRegex = array.join("");
       }
     };
-    console.log(this.generalRegex)
-    let isValid = this.regex.isValid(this.generalRegex);
-    console.log(isValid)
+    // console.log(this.generalRegex)
+    if (!this.regex.isValid(this.generalRegex)){
+      throw  new Error('Invalid regex');
+    };
+    // console.log(isValid)
     this.regex = new Regex(this.generalRegex);
     this.tokenTree = this.regex.constructTokenTree();
     this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
-    console.log(this.ast);
+    // console.log(this.ast);
     this.dfa = this.ast.generateDirectDFATokens();
-    console.log(this.dfa)
+    // console.log(this.dfa)
   };
 };

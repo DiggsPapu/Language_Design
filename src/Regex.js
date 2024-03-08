@@ -19,11 +19,11 @@ export class Regex {
   // para verificar regex validas, true es valida, false es no valida
   isValid(regex) {
     // ver que no existan . ? + |
-    if (regex === ".") return false;
-    if (regex === "?") return false;
-    if (regex === "+") return false;
-    if (regex === "|") return false;
-    if (regex === "*") return false;
+    if (regex === ".") throw new Error(`Syntax error, regex cannot be just a "."`);
+    if (regex === "?") throw new Error(`Syntax error, regex cannot be just a "?"`);
+    if (regex === "+") throw new Error(`Syntax error, regex cannot be just a "+"`);
+    if (regex === "|") throw new Error(`Syntax error, regex cannot be just a "|"`);
+    if (regex === "*") throw new Error(`Syntax error, regex cannot be just a "*"`);
     // ver directamente desde la regex, si se ingresaron mas '(' que ')'
     let lefts = 0;
     let rights = 0;
@@ -45,48 +45,41 @@ export class Regex {
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
           (last === "(" && regex[i -2] !== "\\")
         ) {
-          console.log("hey4")
-          return false;
+          throw new Error(`Syntax error, unexpected ${c} before ( in regex`);
         }
         // despues
         if (c === ")" && (last === "(" || last === "." || last === "|") && regex[i -2] !== "\\") {
-          console.log("hey3");
-          return false;
+          throw new Error(`Syntax error, unexpected ${last} before ) in regex`);
         }
         // ver errores con operadores binarios
         if (
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
           (last === "." && regex[i -2] !== "\\")
         ) {
-          console.log("hey2");
-          return false;
+          throw new Error(`Syntax error, binary operator ${c} invalid`);
         }
         if (
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|") &&
           (last === "|" && regex[i -2] !== "\\")
         ) {
-          console.log("hey1");
-          return false;
+          throw new Error(`Syntax error, unexpected ${c} successive binary operator `);
         }
       }
       else {
         if (
           (c === "*" || c === "+" || c === "?" || c === "." || c === "|")&&(regex[i-1]!=="\\")
         ) {
-          console.log("hey0")
-          return false;
+          throw new Error(`Syntax error, unexpected ${c} in first position `);
         }
       }
     }
     // ver si el ultimo caracter es binario
     if ((regex[regex.length - 1] === "." && (regex[regex.length-2]!=="\\")) || (regex[regex.length - 1] === "|" && (regex[regex.length-2]!=="\\"))) {
-      console.log("binario")
-      return false;
+      throw new Error(`Syntax error, unexpected ${regex[regex.length-1]} in last position`);
     }
     // ver si existe la misma cantidad de parentesis derechos e izquierdos
     if (lefts !== rights) {
-      console.log("Parentesis")
-      return false;
+      throw new Error(`Syntax error, not balanced parentesis operators`);
     }
     // si nada de lo anterior se cumple, se acepta la regex
     return true;
