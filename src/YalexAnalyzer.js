@@ -13,7 +13,7 @@ export class YalexAnalyzer{
         this.readFile(data);
         console.log(this.tokensSet);
         console.log(this.rulesSet);
-        this.createBigTree();
+        // this.createBigTree();
     };
     loadAfdCheckers(){
       // AFD FOR THE COMMENTARIES
@@ -21,7 +21,6 @@ export class YalexAnalyzer{
       let tokenTree = regex.constructTokenTree();
       let ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.commentaryDFA = ast.generateDirectDFATokens();
-      console.log(this.commentaryDFA)
       // AFD FOR THE DELIMETERS
       regex = new Regex("(( )|\n|\r|\t)+");
       tokenTree = regex.constructTokenTree();
@@ -39,17 +38,21 @@ export class YalexAnalyzer{
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionNameDFA = ast.generateDirectDFATokens();
       // definition definition afd
-      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|=|^|:|;|\\+|\t|\b|\f|\r|\n|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\\f|\\b|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\b'|'\\f'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'^')+"+YalexTokens.TERMINAL)
+      // regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|=|^|:|;|\\+|\t|\b|\f|\r|\n|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\\f|\\b|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\b'|'\\f'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'^')+"+YalexTokens.TERMINAL)
+      regex = new Regex(this.ascii.DEFINITION_DEFINITION);
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.definitionDefinitionDFA = ast.generateDirectDFATokens();
+      
+      console.log(this.definitionDefinitionDFA)
       // AFD FOR THE RULES
       regex = new Regex("( )*rule tokens( )*=")
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.startRuleDFA = ast.generateDirectDFATokens();
       // rule name
-      regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|\\+|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'<'|'>'|'^'|\">=\"|\"<=\"|\":=\")+"+YalexTokens.TERMINAL)
+      // regex = new Regex("( )*(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9|\\+|-|\\*|\\?|\\.|\\(|\\)|\\||]|[|_|\\n|\\t|\\r|\\s|\"|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|' '|'\\n'|'\\t'|'\\r'|'\\s'|'\\+'|'/'|'-'|'\\*'|'\\?'|'\\.'|'\\('|'\\)'|'\\|'|'\"'|';'|':'|'='|'<'|'>'|'^'|\">=\"|\"<=\"|\":=\")+"+YalexTokens.TERMINAL)
+      regex = new Regex(this.ascii.DEFINITION_DEFINITION);
       tokenTree = regex.constructTokenTree();
       ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
       this.ruleNameDFA = ast.generateDirectDFATokens();
@@ -136,11 +139,10 @@ export class YalexAnalyzer{
             let indexDefinitionDefinition = 0;
             // For passing =
             i++;
-            // console.log("Start definition");
-            // console.log(this.definitionDefinitionDFA)      
+            console.log(`Start definition ${data[i]}${data[i+1]}${data[i+2]}${data[i+3]}${data[i+4]}`);
+            // console.log(this.definitionDefinitionDFA);      
             [isDefinitionDefinition, indexDefinitionDefinition, S] = this.definitionDefinitionDFA.yalexSimulate(data, i);
-            // console.log(this.definitionDefinitionDFA)
-            // The minus one its bc we dont care about the ]
+            // console.log(this.definitionDefinitionDFA);
             i = indexDefinitionDefinition;
             if (isDefinitionDefinition){
               let definition = ""
@@ -213,17 +215,18 @@ export class YalexAnalyzer{
             }
             // It is a rule name and should not be inside a rule definition
             else if (isRuleName && !insideRuleDefinition) {
+              ruleName = data.slice(i, indexRuleName);
               // console.log("RULENAME");
               // console.log(insideRuleDefinition);
               i = indexRuleName;
               insideRuleDefinition = true;
-              ruleName = null;
-              ruleName = "";
-              indexRuleName--;
-              while (data[indexRuleName]!==" ") {
-                ruleName = data[indexRuleName] + ruleName;
-                indexRuleName--;
-              }
+              // ruleName = null;
+              
+              // indexRuleName--;
+              // while (data[indexRuleName]!==" ") {
+              //   ruleName = data[indexRuleName] + ruleName;
+              //   indexRuleName--;
+              // }
               // A new set is created
               if (!this.rulesSet.has(ruleName)){
                 this.rulesSet.set(ruleName.trim(), "");
@@ -269,9 +272,12 @@ export class YalexAnalyzer{
           throw Error(`Invalid yalex in position ${i}, character ${data[i]}`);
         }
       }
+      console.log(this.tokensSet)
+      console.log(this.rulesSet);
       let keys = Array.from(this.tokensSet.keys());
+      console.log(keys)
       // REPLACE ALL ESCAPED VALUES
-      for (let i = 0; i < keys.length; i++) {
+      for (let i = 2; i < keys.length; i++) {
         for (let j = 0; j < this.tokensSet.get(keys[i])[0].length; j++){
           if (this.tokensSet.get(keys[i])[0][j-1] === "\\" && 
           (this.tokensSet.get(keys[i])[0][j] === "n"||this.tokensSet.get(keys[i])[0][j] === "t"||this.tokensSet.get(keys[i])[0][i] === "r"||this.tokensSet.get(keys[i])[0][j] === "b"||this.tokensSet.get(keys[i])[0][j] === "f")){
@@ -283,7 +289,6 @@ export class YalexAnalyzer{
           };
         };
       };
-      
       console.log(this.tokensSet);
   };
   createBigTree(){
@@ -318,6 +323,17 @@ export class YalexAnalyzer{
       this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
       afds.push(this.ast.generateDirectDFATokens());
     }
+    // REPLACE ALL ESCAPED VALUES because in the key names there could be some like [' ''\n''\t']
+    for (let i = 0; i < this.generalRegex.length; i++) {
+      if (this.generalRegex[i-1] === "\\" && 
+      (this.generalRegex[i] === "n"||this.generalRegex[i] === "t"||this.generalRegex[i] === "r"||this.generalRegex[i] === "b"||this.generalRegex[i] === "f")){
+        this.generalRegex = this.generalRegex.replace("\\n", "\n");
+        this.generalRegex = this.generalRegex.replace("\\t", "\t");
+        this.generalRegex = this.generalRegex.replace("\\r", "\r");
+        this.generalRegex = this.generalRegex.replace("\\b", "\b");
+        this.generalRegex = this.generalRegex.replace("\\f", "\f");
+      };
+    };
     // AFD FORT THE LEXER
     // " AFD for strings or inside brackets
     this.regex = new Regex(this.ascii.DOUBLE_QUOTES);

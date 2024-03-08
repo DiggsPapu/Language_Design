@@ -1,12 +1,9 @@
-(* Lexer para Gramática No. 4 *)
 
-(* Introducir cualquier header aqui *)
 let delim = [' ''\t''\n']
-let delim2 = ['\b''\f']
+let delim2 = ['\b']
 let digit = ['A'-'a']
 let digits = digit+"digit"
 rule tokens = 
   delim2
-  |  delim {return otra_cosa}
-  | digit   (*HOla*)     { return ID }
-  | digits   { return NUMBER }
+  | [' ''\b''\r']
+  | ";="
