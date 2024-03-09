@@ -36,6 +36,7 @@ export class asciiUniverses {
     this.BRACKETS = ["[","]"]
     this.PARENTHESIS = ["\\(","\\)"]
     this.OPERATORS = ["\\+", "\\*", "\\(","\\)", "\\.", "\\|", "\\?"]
+    this.CLEAN_OPERATORS = ["+", "*", "(",")", ".", "|", "?"]
     this.ESCAPE_CHARACTERS = ["\\n", "\\t", "\\r", "\\b", "\\f", "\\s"]
     this.PUNCTUATION = [";","\\.",":", ",", "!", "\\?" ]
     for (let i = 0; i<=255; i++){

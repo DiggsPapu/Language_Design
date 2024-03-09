@@ -39,7 +39,7 @@ function FileDrop() {
     setCombinedContent(content);
     let yalex = new YalexAnalyzer(content);
     // console.log(drawTreeTokens(yalex.ast))
-    setTreeGraph(drawTreeTokens(yalex.ast));
+    // setTreeGraph(drawTreeTokens(yalex.ast));
   };
 
   const { getRootProps, getInputProps } = useDropzone({
