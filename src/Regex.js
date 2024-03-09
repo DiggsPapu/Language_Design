@@ -160,79 +160,15 @@ export class Regex {
     }
     return tokens;
   }
-  insertDotsInRegexTokenizedWithWords(dfaArray, regex) {
+  insertDotsInRegexTokenizedWithWords(regex) {
     // se necesita la regex a recorrer, y un postfix vacio a construir
     let tokens = [];
-    let token = null;
-    let isWordChar = false;
-    let index = 0;
-    let S = null;
     // recorrer cada caracter para construir la regex con puntos
     for (let c = 0; c < regex.length; c++) {
       const element = regex[c];
-      for (let n = 0; n<dfaArray.length; n++){
-        let currentDfa = dfaArray[n];
-        [isWordChar, index, S] = currentDfa.yalexSimulate(regex, c);
-        if (isWordChar){
-          break;
-        }
-      };
-      if (isWordChar){
-        let newWord = regex.slice(c, index);
-        let newToken = new Token(newWord, -2);
-        tokens.push(newToken);
-        c = index+1;
-        isWordChar = false;
-      }
-      else{
-        switch(regex[c]){
-          case "*":
-            token = new Token("*", 2);
-            tokens.push(token);
-            break;
-          case "+":
-            token = new Token("+", 2);
-            tokens.push(token);
-            break;
-          case "?":
-            token = new Token("?", 2);
-            tokens.push(token);
-            break;
-          case ".":
-            token = new Token(".", 1);
-            tokens.push(token);
-            break;
-          case "|":
-            token = new Token("|", 0);
-            tokens.push(token);
-            break;
-          case "(":
-            token = new Token("(", -1);
-            tokens.push(token);
-            break;
-          case ")":
-            token = new Token(")", 3);
-            tokens.push(token);
-            break;
-          case "\\":
-            // El backslash convierte a un operador en un simbolo.
-            if (this.isOperator(regex[c+1])){
-              tokens.push(new Token(regex[c+1], -2))
-              c++;
-            }
-            // El backslash es un simbolo
-            else{
-              tokens.push(new Token("\\", -2));
-            }
-            break;
-          default:
-            token = new Token(element, -2);
-            tokens.push(token);
-            break;  
-        };
-      }
+      tokens.push(element);
       // para el parentesis izquierdo y el operador union es imposible concatenar, lo mismo si ya existe la concatenacion
-      if ((element === "(" || element === "|" || element === ".")&&(regex[c-1]!=="\\")) {
+      if (((element.value === "("  && element.precedence === -1) || (element.value === "|" && element.precedence === 0) || (element.value === "." && element.precedence === 1))) {
         continue;
       }
       // si no se ha llegado al ultimo caracter
@@ -241,10 +177,7 @@ export class Regex {
         const next = regex[c + 1];
 
         // se revisa si es un operador no igual a '(', si si, se interrumpe la iteracion
-        if ((this.isOperator(next) && next !== "(") && regex[c]!=="\\") {
-          continue;
-        }
-        else if (this.isOperator(next)&&regex[c]==="\\"){
+        if ((next.precedence>-1 && next.value !== "(")) {
           continue;
         }
         // si no, concatenamos

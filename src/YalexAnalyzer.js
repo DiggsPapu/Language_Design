@@ -317,6 +317,13 @@ export class YalexAnalyzer{
   createBigTree(){
     this.eliminateRecursion();
     this.tokenize();
+    this.generalRegexTokenized = this.regex.insertDotsInRegexTokenizedWithWords(this.generalRegexTokenized);
+    this.generalRegexPostfix = this.regex.infixToPostfixTokenized(this.generalRegexTokenized);
+    this.regex.postfixTokenized = this.generalRegexPostfix;
+    this.tokenTree = this.regex.constructTokenTree();
+    console.log(this.tokenTree);
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    
   };
   // This will only tokenize and convert based on what pattern it is for example [0-4] to (0|1|2|3|4) but it will always be in ascii code to avoid conflicts
   tokenize(){
