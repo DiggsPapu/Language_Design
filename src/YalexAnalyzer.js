@@ -360,15 +360,15 @@ export class YalexAnalyzer{
       }
       else if (c === "]"){ 
         insideBrackets1--;
+        if (this.generalRegexTokenized[this.generalRegexTokenized.length-1].precedence === 0){this.generalRegexTokenized.pop()};
         this.generalRegexTokenized.push(new Token(")", this.getPrecedence(")")));
       }
       // is double quotes
-      else if (isWordChar && afdIndex === 0){this.handleDoubleQuotes(this.generalRegex,this.generalRegexTokenized, i, index, insideBrackets1); i = index; afdIndex = null;}
+      else if (isWordChar && afdIndex === 0){this.handleDoubleQuotes(this.generalRegex, this.generalRegexTokenized, i, index, insideBrackets1); i = index; afdIndex = null;}
       // is simple quotes
-      else if (afdIndex === 1) {console.log("hey")}
+      else if (afdIndex === 1 && isWordChar){this.handleSimpleQuotes(this.generalRegex, this.generalRegexTokenized, i, index, insideBrackets1); i = index; afdIndex = null;}
       // Is any regex operator +, *, (, ), ., ? just appends
-      else if (c ==="+" || c === "*" || c === "?" || c === "(" || c === ")" || c === "."){
-        console.log("hola"); this.generalRegexTokenized.push(new Token(c, this.getPrecedence(c)));}
+      else if (c ==="+" || c === "*" || c === "?" || c === "(" || c === ")" || c === ".")this.generalRegexTokenized.push(new Token(c, this.getPrecedence(c)));
       // is any character
       else if (c === "_"){console.log(`is character`)}
      
@@ -386,6 +386,15 @@ export class YalexAnalyzer{
       case "(": return -1;
       case ")": return 3;
       default: throw new Error("Invalid operator");
+    }
+  }
+  handleSimpleQuotes(regex, list, i, index, insideBrackets1){
+    if (insideBrackets1 === 1){
+      list.push(new Token(regex[i+1], -2));
+      list.push(new Token("|", this.getPrecedence("|")));
+    }
+    else if (insideBrackets1 === 0) {
+      list.push(new Token(regex[i+1], -2));
     }
   }
   handleDoubleQuotes(regex, list, i, index, insideBrackets1){
