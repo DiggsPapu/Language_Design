@@ -3,16 +3,8 @@
  {import anything}
  {import "anything"}
  
-let delim = [' ''\t''\n']
-let delim2 = ['\b']
-let digit = [^'5'-'7']
-let digits = digit+"digit"
+let str = (_)
 rule tokens = 
-  ["hola"]
-  | ";="
-  | "fjdskfjlkdsf"
-  | digit
-  | delim(delim2)
-  | ['+''-']
+  str {return string}
   
   {trailer algo}

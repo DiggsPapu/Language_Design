@@ -6,7 +6,7 @@ let delim = ["\s\t\n"]
 let ws = delim+
 let letter = ['A'-'Z''a'-'z']
 let digit = ['0'-'9']
-let digits = digit+
+let digits = digit+toulose
 let id = letter(letter|digit)*
 let number = digits(digits)?('E'['+''-']?digits)?
 

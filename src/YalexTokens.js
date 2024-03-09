@@ -46,6 +46,7 @@ export class asciiUniverses {
         this.UNIVERSE.push("\\"+String.fromCharCode(i));  
       }
       else if (String.fromCharCode(i) === "_"||String.fromCharCode(i)==="\\"){
+        console.log(String.fromCharCode(i));
         continue;
       }
       else{
@@ -55,8 +56,9 @@ export class asciiUniverses {
       if (i>=97 && i<=122) this.MINUS.push(String.fromCharCode(i));
       if (i>=48 && i<=58) this.NUMBER.push(String.fromCharCode(i));
     }
-    this.UNIVERSE.push("\\");
+    this.UNIVERSE.push("\\\\");
     this.UNIVERSE.push("\\_")
+    console.log(this.UNIVERSE);
     this.RANGES = [...this.MAYUS, ...this.MINUS, ...this.NUMBER];
     this.DOUBLE_QUOTES = ["\"(", this.RANGES.join("|"),"|", this.MATH.join("|"), "|",this.PUNCTUATION.join("|"), "|", this.ESCAPE_CHARACTERS.join("|"), "|", ["\n", "\t", "\r", "\b"].join("|"),"| )+\""].join("");
     // console.log(this.DOUBLE_QUOTES);

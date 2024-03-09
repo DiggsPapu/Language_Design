@@ -404,6 +404,7 @@ export class YalexAnalyzer{
         i-=2;
         isWordChar = false;
       }
+      else if (c === "\\") i+=1;// skip next character
       else if (c === "[") insideBrackets1++;
       else if (c === "]") insideBrackets1--;
       // is double quotes
@@ -439,7 +440,9 @@ export class YalexAnalyzer{
         let array = this.generalRegex.split("")
         array[i] = "("+[...this.ascii.UNIVERSE].join("|")+")"
         console.log(array[i])
-        // this.generalRegex = array.join("");
+        // let newIndex = i + this.ascii.UNIVERSE.length;
+        this.generalRegex = array.join("");
+        i = i+this.ascii.UNIVERSE.length;
       }
       if (insideBrackets1>1||insideBrackets1<0){
         throw  new Error ("Logic error, unbalanced brackets");
