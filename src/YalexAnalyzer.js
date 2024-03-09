@@ -334,6 +334,9 @@ export class YalexAnalyzer{
     afds.push(this.ast.generateDirectDFATokens());
     console.log(this.generalRegex);
     this.generalRegexTokenized = [];
+    let complementIndex = 0;
+    this.complementSet = [];
+    this.isComplement = false;
     let insideBrackets1 = 0;
     for (let i = 0; i < this.generalRegex.length; i++){
       let isWordChar = false;
@@ -357,9 +360,30 @@ export class YalexAnalyzer{
        if (c === "["){ 
         insideBrackets1++;
         this.generalRegexTokenized.push(new Token("(", this.getPrecedence("(")));
+        if (this.generalRegex[i+1]=== "^"){
+          this.isComplement = true;
+          complementIndex = this.generalRegexTokenized.length;
+          i++;
+        }
       }
       else if (c === "]"){ 
         insideBrackets1--;
+        // Complement operation ends
+        if (this.isComplement){
+          // Array that will be eliminated
+          this.generalRegexTokenized.splice(complementIndex, this.generalRegexTokenized.length - complementIndex);
+          // get the complement
+          let newComplement = []
+          console.log(this.complementSet);
+          for (let k = 0; k < 255; k++){
+            if (!this.complementSet.includes(k)) {
+              newComplement.push(new Token(k, -2));
+              newComplement.push(new Token("|", this.getPrecedence("|")));
+            };
+          };
+          this.generalRegexTokenized = [...this.generalRegexTokenized, ...newComplement];
+        }
+        this.isComplement = false;
         if (this.generalRegexTokenized[this.generalRegexTokenized.length-1].precedence === 0){this.generalRegexTokenized.pop()};
         this.generalRegexTokenized.push(new Token(")", this.getPrecedence(")")));
       }
@@ -368,13 +392,16 @@ export class YalexAnalyzer{
       // is simple quotes
       else if (afdIndex === 1 && isWordChar){this.handleSimpleQuotes(this.generalRegex, this.generalRegexTokenized, i, index, insideBrackets1); i = index; afdIndex = null;}
       // Is any regex operator +, *, (, ), ., ? just appends
-      else if (c ==="+" || c === "*" || c === "?" || c === "(" || c === ")" || c === ".")this.generalRegexTokenized.push(new Token(c, this.getPrecedence(c)));
+      else if (this.ascii.CLEAN_OPERATORS.includes(c))this.generalRegexTokenized.push(new Token(c, this.getPrecedence(c)));
       // is any character
       else if (c === "_"){
         this.generalRegexTokenized.push(new Token ("(", this.getPrecedence("(")));
         for(let n = 0; n < 255; n++){
           this.generalRegexTokenized.push(new Token (n, -2));
           this.generalRegexTokenized.push(new Token ("|", this.getPrecedence("|")));
+          if (this.isComplement){
+            this.complementSet.push(n);
+          }
         }
         this.generalRegexTokenized.push(new Token (")", this.getPrecedence(")")));
       }
@@ -389,6 +416,9 @@ export class YalexAnalyzer{
           for (let j = previousIndex+1; j < nextIndex; j++) {
             this.generalRegexTokenized.push(new Token(j, -2));
             this.generalRegexTokenized.push(new Token("|", this.getPrecedence("|")));
+            if (this.isComplement){
+              this.complementSet.push(j);
+            }
           };
         } else throw new Error ("Syntax error, range incorrect, range doesn't make sense");
         // this.generalRegexTokenized.push(new Token(")", this.getPrecedence(")")));
@@ -414,6 +444,9 @@ export class YalexAnalyzer{
     if (insideBrackets1 === 1){
       list.push(new Token(regex[i+1].charCodeAt(0), -2));
       list.push(new Token("|", this.getPrecedence("|")));
+      if (this.isComplement){
+        this.complementSet.push(regex[i+1].charCodeAt(0));
+      }
     }
     else if (insideBrackets1 === 0) {
       list.push(new Token(regex[i+1].charCodeAt(0), -2));
@@ -426,6 +459,9 @@ export class YalexAnalyzer{
         let c = regex[j];
         if (!this.ascii.CLEAN_OPERATORS.includes(c)) {
           list.push(new Token(c.charCodeAt(0), -2));
+          if (this.isComplement){
+            this.complementSet.push(c.charCodeAt(0));
+          }
           if (j<index-1) list.push(new Token("|", this.getPrecedence("|")));
         }
         else list.push(new Token(c.charCodeAt(0), this.getPrecedence(c)));
