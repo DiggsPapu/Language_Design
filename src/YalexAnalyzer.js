@@ -378,6 +378,21 @@ export class YalexAnalyzer{
         }
         this.generalRegexTokenized.push(new Token (")", this.getPrecedence(")")));
       }
+      // Is a range
+      else if (c === "-" && insideBrackets1 === 1){
+        // this.generalRegexTokenized.push(new Token("(", this.getPrecedence("(")));
+        let nextIndex = this.generalRegex[i+2].charCodeAt(0);
+        let previousIndex = this.generalRegexTokenized[this.generalRegexTokenized.length-2].value;
+        console.log(nextIndex)
+        console.log(previousIndex)
+        if (previousIndex<nextIndex){
+          for (let j = previousIndex+1; j < nextIndex; j++) {
+            this.generalRegexTokenized.push(new Token(j, -2));
+            this.generalRegexTokenized.push(new Token("|", this.getPrecedence("|")));
+          };
+        } else throw new Error ("Syntax error, range incorrect, range doesn't make sense");
+        // this.generalRegexTokenized.push(new Token(")", this.getPrecedence(")")));
+      }
      
       else {throw new Error(`not recognized in the lexer. ${c}${this.generalRegex[i+1]}${this.generalRegex[i+2]}`)};
     };
