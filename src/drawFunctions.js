@@ -292,18 +292,49 @@ export const drawTreeTokens = (tree) =>{
   return dotStr;
 };
 function drawTreeNodeTokens(node, counter, string_graph){
-  if (node !== null){
-    // console.log(node.value)
+  if (node !== null || node !== undefined){
+    // console.log(node.value.value)
     string_graph+=counter+" [label=\""+node.value.value+"\"];\n";
     counter++;
     let copy_c = counter-1;
-    if (node.left !== null){
+    if (node.left !== null && node.left !== undefined ){
       string_graph += "" + copy_c+ " -> " + counter + ";\n";
       [string_graph,counter] = drawTreeNodeTokens(node.left, counter, string_graph);
     }
-    if (node.right !== null){
+    if (node.right !== null ){
       string_graph += "" + copy_c+ " -> " + counter + ";\n";
       [string_graph,counter] = drawTreeNodeTokens(node.right, counter, string_graph);
+    }
+  };
+  return [string_graph, counter];
+};
+export const drawTreeTokensAscii = (tree) =>{
+  let counter = 0;
+  let dotStr = "digraph tree {\n";
+  dotStr += "rankdir=TB;\n";
+  dotStr += 'size="8,5";\n';
+  
+  [dotStr, counter] = drawTreeNodeTokensAscii(tree.treeRoot,counter,dotStr);
+  dotStr += "}";
+  return dotStr;
+};
+function drawTreeNodeTokensAscii(node, counter, string_graph){
+  if (node !== null || node !== undefined){
+    let val = node.value.value;
+    if (node.value.precedence < -1){
+      val = String.fromCharCode(node.value.value);
+    }
+    // console.log(node.value.value)
+    string_graph+=counter+` [label="${val}"];\n`;
+    counter++;
+    let copy_c = counter-1;
+    if (node.left !== null && node.left !== undefined ){
+      string_graph += "" + copy_c+ " -> " + counter + ";\n";
+      [string_graph,counter] = drawTreeNodeTokensAscii(node.left, counter, string_graph);
+    }
+    if (node.right !== null ){
+      string_graph += "" + copy_c+ " -> " + counter + ";\n";
+      [string_graph,counter] = drawTreeNodeTokensAscii(node.right, counter, string_graph);
     }
   };
   return [string_graph, counter];

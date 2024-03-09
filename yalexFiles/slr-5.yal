@@ -1,18 +1,4 @@
-{import
- anything}
- {import anything}
- {import "anything"}
- 
-let delim = [' ''\t''\n']
-let delim2 = ['\b']
-let digit = [^'5'-'7']
-let digits = digit+"digit"
+let delim =  [^'p']
+let ws = delim+
 rule tokens = 
-  ["hola"]
-  | ";="
-  | "fjdskfjlkdsf"
-  | digit
-  | delim(delim2)
-  | ['+''-']
-  
-  {trailer algo}
+    ws        { return WHITESPACE } 
