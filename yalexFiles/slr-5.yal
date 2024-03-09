@@ -1,10 +1,4 @@
-{import
- anything}
- {import anything}
- {import "anything"}
- 
-let str = (_)
+let delim = "\s\t\n"
+let ws = delim+
 rule tokens = 
-  str {return string}
-  
-  {trailer algo}
+    ws        { return WHITESPACE } 

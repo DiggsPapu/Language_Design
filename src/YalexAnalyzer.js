@@ -318,13 +318,98 @@ export class YalexAnalyzer{
     this.eliminateRecursion();
     this.tokenize();
   };
+  // This will only tokenize and convert based on what pattern it is for example [0-4] to (0|1|2|3|4) but it will always be in ascii code to avoid conflicts
   tokenize(){
+    let afds = [];
+    // AFD FOR THE LEXER
+    // " AFD for strings or inside brackets
+    this.regex = new Regex(this.ascii.DOUBLE_QUOTES);
+    this.tokenTree = this.regex.constructTokenTree();
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    afds.push(this.ast.generateDirectDFATokens());
+    // ' AFD
+    this.regex = new Regex(this.ascii.SIMPLE_QUOTES);
+    this.tokenTree = this.regex.constructTokenTree();
+    this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    afds.push(this.ast.generateDirectDFATokens());
     console.log(this.generalRegex);
-    this.generalRegexTokenized = []
+    this.generalRegexTokenized = [];
+    let insideBrackets1 = 0;
     for (let i = 0; i < this.generalRegex.length; i++){
-      let token = this.generalRegex[i];
+      let isWordChar = false;
+      let index = 0;
+      let S = null;
+      let isWord = false;
+      let indexTemp = 0;
+      let afdIndex = 0;
+      let c = this.generalRegex[i];
+      for (let n = 0; n<afds.length; n++){
+        console.log(`Token to be analyzed: ${c}`)
+        let currentDfa = afds[n];
+        [isWord, indexTemp, S] = currentDfa.yalexSimulate(this.generalRegex, i);
+        if (isWord && indexTemp>index){
+          isWordChar = isWord;
+          index = indexTemp; 
+          afdIndex = n;
+        };
+      };
+       // Replace with parentesis
+       if (c === "["){ 
+        insideBrackets1++;
+        this.generalRegexTokenized.push(new Token("(", this.getPrecedence("(")));
+      }
+      else if (c === "]"){ 
+        insideBrackets1--;
+        this.generalRegexTokenized.push(new Token(")", this.getPrecedence(")")));
+      }
+      // is double quotes
+      else if (isWordChar && afdIndex === 0){this.handleDoubleQuotes(this.generalRegex,this.generalRegexTokenized, i, index, insideBrackets1); i = index; afdIndex = null;}
+      // is simple quotes
+      else if (afdIndex === 1) {console.log("hey")}
+      // Is any regex operator +, *, (, ), ., ? just appends
+      else if (c ==="+" || c === "*" || c === "?" || c === "(" || c === ")" || c === "."){
+        console.log("hola"); this.generalRegexTokenized.push(new Token(c, this.getPrecedence(c)));}
+      // is any character
+      else if (c === "_"){console.log(`is character`)}
+     
+      else {throw new Error(`not recognized in the lexer. ${c}${this.generalRegex[i+1]}${this.generalRegex[i+2]}`)};
     };
+    console.log(this.generalRegexTokenized);
+  };
+  getPrecedence(c){
+    switch(c){
+      case "*": return 2;
+      case "+": return 2;
+      case "?": return 2;
+      case ".": return 1;
+      case "|": return 0;
+      case "(": return -1;
+      case ")": return 3;
+      default: throw new Error("Invalid operator");
+    }
   }
+  handleDoubleQuotes(regex, list, i, index, insideBrackets1){
+    // Se trabaja como un or
+    if (insideBrackets1===1){
+      for (let j = i+1; j < index; j++){
+        let c = regex[j];
+        if (!this.ascii.CLEAN_OPERATORS.includes(c)) {
+          list.push(new Token(c.charCodeAt(0), -2));
+          if (j<index-1) list.push(new Token("|", this.getPrecedence("|")));
+        }
+        else list.push(new Token(c.charCodeAt(0), this.getPrecedence(c)));
+      }
+    }
+    else if (insideBrackets1 === 0){
+      for (let j = i+1; j < index; j++){
+        let c = regex[j];
+        list.push(new Token(c.charCodeAt(0), -2))
+        // Do the concat because it is a string
+        if (j!==index-1)list.push(new Token(".", 1));
+      }
+    }
+    console.log(list);
+  };
   // This method eliminates the recursion that could happen when derivating the regex, it creates an string clean.
   eliminateRecursion(){
     // Get the general regex
@@ -381,8 +466,6 @@ export class YalexAnalyzer{
     this.tokenTree = this.regex.constructTokenTree();
     this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
     afds.push(this.ast.generateDirectDFATokens());
-    // console.log(afds[afds.length-2])
-    // console.log(afds[afds.length-1])
     // eliminate recursion
     let insideBrackets1 = 0;
     for (let i = 0; i < this.generalRegex.length; i++){
@@ -393,9 +476,6 @@ export class YalexAnalyzer{
       let indexTemp = 0;
       let afdIndex = 0;
       let c = this.generalRegex[i];
-      // console.log(this.generalRegex[i])
-      // Detect if there is a recursion
-      // console.log(`original i: ${i}, ${this.generalRegex}`)
       for (let n = 0; n<afds.length; n++){
         let currentDfa = afds[n];
         [isWord, indexTemp, S] = currentDfa.yalexSimulate(this.generalRegex, i);
@@ -422,14 +502,9 @@ export class YalexAnalyzer{
       else if (afdIndex===afds.length-2){
         i = index;
         isWordChar = false;
-        // console.log(`entro a double quotes: ${this.generalRegex}`)
       }
        // is simple quotes
        else if (afdIndex===afds.length-1){
-        // this.generalRegex = this.handlingSimpleQuotes(this.generalRegex, i);
-        // console.log(index)
-        // console.log(`${this.generalRegex[index-2]}${this.generalRegex[index-1]}${this.generalRegex[index]}${this.generalRegex[index+1]}`)
-        // console.log(`entro a simple quotes ${this.generalRegex}`)
         i = index;
         isWordChar = false;
       } 
