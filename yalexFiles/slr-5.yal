@@ -1,4 +1,4 @@
-let delim = '+'
+let delim = (_)
 let ws = delim+
 rule tokens = 
     ws        { return WHITESPACE } 

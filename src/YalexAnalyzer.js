@@ -370,7 +370,14 @@ export class YalexAnalyzer{
       // Is any regex operator +, *, (, ), ., ? just appends
       else if (c ==="+" || c === "*" || c === "?" || c === "(" || c === ")" || c === ".")this.generalRegexTokenized.push(new Token(c, this.getPrecedence(c)));
       // is any character
-      else if (c === "_"){console.log(`is character`)}
+      else if (c === "_"){
+        this.generalRegexTokenized.push(new Token ("(", this.getPrecedence("(")));
+        for(let n = 0; n < 255; n++){
+          this.generalRegexTokenized.push(new Token (n, -2));
+          this.generalRegexTokenized.push(new Token ("|", this.getPrecedence("|")));
+        }
+        this.generalRegexTokenized.push(new Token (")", this.getPrecedence(")")));
+      }
      
       else {throw new Error(`not recognized in the lexer. ${c}${this.generalRegex[i+1]}${this.generalRegex[i+2]}`)};
     };
@@ -390,11 +397,11 @@ export class YalexAnalyzer{
   }
   handleSimpleQuotes(regex, list, i, index, insideBrackets1){
     if (insideBrackets1 === 1){
-      list.push(new Token(regex[i+1], -2));
+      list.push(new Token(regex[i+1].charCodeAt(0), -2));
       list.push(new Token("|", this.getPrecedence("|")));
     }
     else if (insideBrackets1 === 0) {
-      list.push(new Token(regex[i+1], -2));
+      list.push(new Token(regex[i+1].charCodeAt(0), -2));
     }
   }
   handleDoubleQuotes(regex, list, i, index, insideBrackets1){
@@ -417,7 +424,6 @@ export class YalexAnalyzer{
         if (j!==index-1)list.push(new Token(".", 1));
       }
     }
-    console.log(list);
   };
   // This method eliminates the recursion that could happen when derivating the regex, it creates an string clean.
   eliminateRecursion(){
