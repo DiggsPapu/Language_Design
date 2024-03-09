@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Paper, Typography } from '@mui/material';
 import { YalexAnalyzer } from '../YalexAnalyzer';
 import { Graphviz } from "graphviz-react";
-import { drawGraph, drawTreeTokens, drawTreeTokensAscii } from '../drawFunctions';
+import { drawGraph, drawTreeTokens2, drawTreeTokens, drawTreeTokensAscii } from '../drawFunctions';
 
 function FileDrop() {
   const [acceptedFiles, setAcceptedFiles] = useState([]);
@@ -38,8 +38,10 @@ function FileDrop() {
     setAcceptedFiles(filesWithContent);
     setCombinedContent(content);
     let yalex = new YalexAnalyzer(content);
+    console.log(yalex.ast);
     setTreeGraph(drawTreeTokens(yalex.ast));
     const treeAscii = drawTreeTokensAscii(yalex.ast);
+    console.log(treeAscii);
     navigator.clipboard.writeText(treeAscii)
     .then(() => console.log('Tree diagram copied to clipboard'))
     .catch((error) => console.error('Error copying to clipboard:', error));
