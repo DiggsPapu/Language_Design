@@ -39,11 +39,24 @@ export class asciiUniverses {
     this.ESCAPE_CHARACTERS = ["\\n", "\\t", "\\r", "\\b", "\\f", "\\s"]
     this.PUNCTUATION = [";","\\.",":", ",", "!", "\\?" ]
     for (let i = 0; i<=255; i++){
-      this.UNIVERSE.push(String.fromCharCode(i));
+      if (String.fromCharCode(i)==="?"||String.fromCharCode(i)==="."||String.fromCharCode(i)==="+"||
+      String.fromCharCode(i)==="("||String.fromCharCode(i)===")"||String.fromCharCode(i)==="*"||
+      String.fromCharCode(i)==="["||String.fromCharCode(i)==="|"||String.fromCharCode(i)==="]"||
+      String.fromCharCode(i)==="|"||String.fromCharCode(i)==="^"){
+        this.UNIVERSE.push("\\"+String.fromCharCode(i));  
+      }
+      else if (String.fromCharCode(i) === "_"||String.fromCharCode(i)==="\\"){
+        continue;
+      }
+      else{
+        this.UNIVERSE.push(String.fromCharCode(i));
+      }
       if (i>=65 && i<=90) this.MAYUS.push(String.fromCharCode(i));
       if (i>=97 && i<=122) this.MINUS.push(String.fromCharCode(i));
       if (i>=48 && i<=58) this.NUMBER.push(String.fromCharCode(i));
     }
+    this.UNIVERSE.push("\\");
+    this.UNIVERSE.push("\\_")
     this.RANGES = [...this.MAYUS, ...this.MINUS, ...this.NUMBER];
     this.DOUBLE_QUOTES = ["\"(", this.RANGES.join("|"),"|", this.MATH.join("|"), "|",this.PUNCTUATION.join("|"), "|", this.ESCAPE_CHARACTERS.join("|"), "|", ["\n", "\t", "\r", "\b"].join("|"),"| )+\""].join("");
     // console.log(this.DOUBLE_QUOTES);
@@ -52,6 +65,6 @@ export class asciiUniverses {
     this.DEFINITION_DEFINITION = ["( )*(",this.RANGES.join("|"), this.MATH.join("|"), "|", this.DOUBLE_QUOTES, "|", this.SIMPLE_QUOTES, "|", this.OPERATORS.join("|"), "|", this.BRACKETS.join("|"),"|_)+", this.TERMINAL ].join("")
     // console.log(this.DEFINITION_DEFINITION)
     this.HEADER = ["{( )*(",this.RANGES.join("|"), this.MATH.join("|"), "|", this.DOUBLE_QUOTES, "|", this.SIMPLE_QUOTES, "|", this.OPERATORS.join("|"), "|", this.BRACKETS.join("|"),"|", ["\n", "\t", "\r"].join("|"),"| |_)+}" ].join("")
-    console.log(this.HEADER)
+    
   }
 }

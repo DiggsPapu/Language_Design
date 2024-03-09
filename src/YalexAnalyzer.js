@@ -437,8 +437,9 @@ export class YalexAnalyzer{
       } 
       else if (c === "_"){
         let array = this.generalRegex.split("")
-        array[i] = "("+[...this.ascii.MINUS, ...this.ascii.MAYUS, ...this.ascii.NUMBER, ...this.ascii.PUNCTUATION].join("|")+")"
-        this.generalRegex = array.join("");
+        array[i] = "("+[...this.ascii.UNIVERSE].join("|")+")"
+        console.log(array[i])
+        // this.generalRegex = array.join("");
       }
       if (insideBrackets1>1||insideBrackets1<0){
         throw  new Error ("Logic error, unbalanced brackets");
