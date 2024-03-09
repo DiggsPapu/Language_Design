@@ -3,12 +3,13 @@ import { useDropzone } from 'react-dropzone';
 import { Paper, Typography } from '@mui/material';
 import { YalexAnalyzer } from '../YalexAnalyzer';
 import { Graphviz } from "graphviz-react";
-import { drawGraph, drawTreeTokens2, drawTreeTokens, drawTreeTokensAscii } from '../drawFunctions';
+import { drawGraph, drawTreeTokens2, drawTreeTokens, drawTreeTokensAscii, drawGraphDFA } from '../drawFunctions';
 
 function FileDrop() {
   const [acceptedFiles, setAcceptedFiles] = useState([]);
   const [combinedContent, setCombinedContent] = useState('');
   const [treeGraph, setTreeGraph] = useState("digraph fsm {rankdir=LR;node [shape = point]; INITIAL_STATE;node [shape = doublecircle]; q1;node [shape = circle];INITIAL_STATE -> q0;q0 -> q1 [label=ε];}");
+  const [afdGraph, setAfdGraph] = useState("digraph fsm {rankdir=LR;node [shape = point]; INITIAL_STATE;node [shape = doublecircle]; q1;node [shape = circle];INITIAL_STATE -> q0;q0 -> q1 [label=ε];}");
   const readFileContent = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -45,7 +46,7 @@ function FileDrop() {
     navigator.clipboard.writeText(treeAscii)
     .then(() => console.log('Tree diagram copied to clipboard'))
     .catch((error) => console.error('Error copying to clipboard:', error));
-    
+    setAfdGraph(drawGraphDFA(yalex.directDFA));
   };
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -81,7 +82,8 @@ function FileDrop() {
           <p>No content yet</p>
         )}
       </div>
-      <Graphviz dot={treeGraph} />
+      <Graphviz options={{ width: "1000px", height: "4000px" }} dot={treeGraph} />
+      <Graphviz options={{ width: "1000px", height: "4000px" }} dot = {afdGraph}/>
     </div>
   );
 }

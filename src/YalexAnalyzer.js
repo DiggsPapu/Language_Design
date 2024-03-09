@@ -319,9 +319,14 @@ export class YalexAnalyzer{
     this.tokenize();
     this.generalRegexTokenized = this.regex.insertDotsInRegexTokenizedWithWords(this.generalRegexTokenized);
     this.generalRegexPostfix = this.regex.infixToPostfixTokenized(this.generalRegexTokenized);
+    console.log(this.generalRegexPostfix)
     this.regex.postfixTokenized = this.generalRegexPostfix;
     this.tokenTree = this.regex.constructTokenTree();
+    this.regex.regexWithDots = this.generalRegexTokenized;
     this.ast = new SyntaxTree(this.tokenTree[0], this.tokenTree[1], this.regex, this.tokenTree[2]);
+    console.log(this.ast)
+    this.directDFA = this.ast.generateDirectDFATokens();
+    console.log(this.directDFA);
 
   };
   // This will only tokenize and convert based on what pattern it is for example [0-4] to (0|1|2|3|4) but it will always be in ascii code to avoid conflicts
@@ -409,6 +414,8 @@ export class YalexAnalyzer{
             this.complementSet.push(n);
           }
         }
+        // Delete the "|"
+        this.generalRegexTokenized.pop();
         this.generalRegexTokenized.push(new Token (")", this.getPrecedence(")")));
       }
       // Is a range
@@ -432,7 +439,10 @@ export class YalexAnalyzer{
      
       else {throw new Error(`not recognized in the lexer. ${c}${this.generalRegex[i+1]}${this.generalRegex[i+2]}`)};
     };
-    console.log(this.generalRegexTokenized);
+    if (!this.regex.isValidTokens(this.generalRegexTokenized)){
+      throw new Error(`Parsing error, something was not right in the regex`);
+    }
+    console.log(this.generalRegexTokenized);  
   };
   getPrecedence(c){
     switch(c){
@@ -593,6 +603,7 @@ export class YalexAnalyzer{
       }
     };
     console.log(this.generalRegex);
+    
   }
   handlingSimpleQuotes(regex, i){
     console.log(i)

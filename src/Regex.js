@@ -84,6 +84,74 @@ export class Regex {
     // si nada de lo anterior se cumple, se acepta la regex
     return true;
   }
+  isValidTokens(regex) {
+    // ver que no existan . ? + |
+    if (regex.length === 1 && regex[0].value === "." && regex[0].precedence >-2) throw new Error(`Syntax error, regex cannot be just a "."`);
+    if (regex.length === 1 && regex[0].value === "?" && regex[0].precedence >-2) throw new Error(`Syntax error, regex cannot be just a "?"`);
+    if (regex.length === 1 && regex[0].value === "+" && regex[0].precedence >-2) throw new Error(`Syntax error, regex cannot be just a "+"`);
+    if (regex.length === 1 && regex[0].value === "|" && regex[0].precedence >-2) throw new Error(`Syntax error, regex cannot be just a "|"`);
+    if (regex.length === 1 && regex[0].value === "*" && regex[0].precedence >-2) throw new Error(`Syntax error, regex cannot be just a "*"`);
+    // ver directamente desde la regex, si se ingresaron mas '(' que ')'
+    let lefts = 0;
+    let rights = 0;
+    // ver si hay casos tipo (. , (+ o similares incorrectos
+    let last = "";
+    for (let i = 0; i < regex.length; i++) {
+      const c = regex[i];
+      console.log(i)
+      if (c.precedence === -1 ) {
+        lefts++;
+      }
+      if (c.precedence === 3) {
+        rights++;
+      }
+      if (i !== 0) {
+        last = regex[i - 1];
+        // ver errores con parentesis
+        // antes
+        if (
+          (c.precedence === 2 || c.precedence === 1 || c.precedence === 0) &&
+          (last.precedence === -1)
+        ) {
+          throw new Error(`Syntax error, unexpected ${c.value} before ( in regex`);
+        }
+        // despues
+        if (c.precedence === 3 && (last.precedence === -1 || last.precedence === 1 || last.precedence === 0)) {
+          throw new Error(`Syntax error, unexpected ${last.value} before ) in regex`);
+        }
+        // ver errores con operadores binarios
+        if (
+          (c.precedence === 2 || c.precedence === 1 || c.precedence === 0) &&
+          (last.precedence === 1)
+        ) {
+          throw new Error(`Syntax error, binary operator ${c.value} invalid`);
+        }
+        if (
+          (c.precedence === 2 || c.precedence === 1 || c.precedence === 0) &&
+          (last.precedence === 0)
+        ) {
+          throw new Error(`Syntax error, unexpected ${c.value} successive binary operator `);
+        }
+      }
+      else {
+        if (
+          (c.precedence === 2 || c.precedence === 1 || c.precedence === 0)
+        ) {
+          throw new Error(`Syntax error, unexpected ${c.value} in first position `);
+        }
+      }
+    }
+    // ver si el ultimo caracter es binario
+    if ((regex[regex.length - 1].precedence === 1) || (regex[regex.length - 1].precedence === 0)) {
+      throw new Error(`Syntax error, unexpected ${regex[regex.length-1].value} in last position`);
+    }
+    // ver si existe la misma cantidad de parentesis derechos e izquierdos
+    if (lefts !== rights) {
+      throw new Error(`Syntax error, not balanced parentesis operators`);
+    }
+    // si nada de lo anterior se cumple, se acepta la regex
+    return true;
+  }
   insertDotsInRegexTokenized() {
     // se necesita la regex a recorrer, y un postfix vacio a construir
     const regex = this.regex;
