@@ -8,17 +8,9 @@ let letter = ['A'-'Z''a'-'z']
 let digit = ['0'-'9']
 let digits = digit+
 let id = letter(letter|digit)*
-let number = digits(digits)?('E'['+''-']?digits)?
+let number = digits(.digits)?('E'['+''-']?digits)?
 
 rule tokens = 
-    ws        { return WHITESPACE }               (* Cambie por una acción válida, que devuelva el token *)
-  | id        { return ID }
-  | number    { return NUMBER }
-  | '+'       { return PLUS }
-  | '-'       { return MINUS }
-  | '*'       { return TIMES }
-  | '/'       { return DIV }
-  | '('       { return LPAREN }
-  | ')'       { return RPAREN }
-
+  number    { return NUMBER }
+  
 (* Introducir cualquier trailer aqui *)

@@ -596,7 +596,7 @@ export class YalexAnalyzer{
       else if (this.ascii.PUNCTUATION.includes(c));
       // is any character
       else if (c === "_");
-      else {throw new Error (`Invalid pattern ${c}`)};
+      else {throw new Error (`Invalid pattern ${c}, maybe was not declared that definition`)};
       // Must be balanced the brackets
       if (insideBrackets1>1||insideBrackets1<0){
         throw  new Error ("Logic error, unbalanced brackets or brackets anidados");
