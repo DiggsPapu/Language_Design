@@ -1,71 +1,3 @@
-import { State } from "./State";
-import { NFA } from "./NFA";
-import { Tree } from "./Tree"
-
-export function getByValue(map, searchValue) {
-  for (let [key, value] of map.entries()) {
-    if (value === searchValue) return key;
-  }
-}
-export const fixLabels = (nfa) => {
-  let newStates = [];
-  let count = 0;
-  let newTransitions = new Map();
-  let relations = new Map();
-
-  for (let i = 0; i < nfa.states.length; i++) {
-    const state = nfa.states[i];
-    relations.set(`Q${count}`, state.label);
-    count++;
-  }
-
-  for (const [key, transition] of relations) {
-    for (const [lastKey, lastTransition] of nfa.transitions) {
-      if (transition === lastKey) {
-        newTransitions.set(key, lastTransition);
-      }
-    }
-  }
-
-  for (const [key, transition] of newTransitions) {
-    for (const [symbol, nextState] of transition) {
-      newTransitions.get(key).set(symbol, getByValue(relations, nextState));
-    }
-  }
-
-  for (const [key, transition] of newTransitions) {
-    newStates.push(new State(key, transition));
-  }
-
-  const initialStateLabel = getByValue(relations, nfa.initialState.label);
-  const q0 = new State(
-    initialStateLabel,
-    newTransitions.get(initialStateLabel)
-  );
-
-  let finals = [];
-
-  if (nfa.finalState instanceof Array) {
-    for (let i = 0; i < nfa.finalState.length; i++) {
-      const final = nfa.finalState[i];
-      const finalStateLabel = getByValue(relations, final.label);
-      const qf = new State(
-        finalStateLabel,
-        newTransitions.get(finalStateLabel)
-      );
-      finals.push(qf);
-    }
-  } else {
-    const finalStateLabel = getByValue(relations, nfa.finalState.label);
-    const qf = new State(finalStateLabel, newTransitions.get(finalStateLabel));
-    finals.push(qf);
-  }
-
-  const dfa = new NFA(q0, finals, newStates, nfa.alphabet, newTransitions);
-
-  return [dfa, relations];
-};
-
 export const drawGraphDFA = (nfa) => {
   let dotStr = "digraph fsm {\n";
   dotStr += "rankdir=LR;\n";
@@ -81,14 +13,98 @@ export const drawGraphDFA = (nfa) => {
 
   nfa.transitions.forEach((nextStates, state) => {
     nextStates.forEach((destinies, symbol) => {
-      if (destinies instanceof Array) {
-        destinies.forEach((s) => {
-          dotStr += "" + state + " -> " + s + " [label=" + symbol + "];\n";
-        });
-      } else {
-        dotStr +=
-          "" + state + " -> " + destinies + " [label=" + symbol + "];\n";
-      }
+      switch (symbol){
+        case "+":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#43;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#43;\"];\n";
+          }
+          break;
+        case "*":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#42;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#42;\"];\n";
+          }
+          break;
+        case ".":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#46;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#46;\"];\n";
+          }
+          break;  
+        case ";":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#59;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#59;\"];\n";
+          }
+          break;  
+        case "|":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#124;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#124;\"];\n";
+          }
+          break; 
+        case "(":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#40;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#40;\"];\n";
+          }
+          break; 
+        case ")":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#41;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#41;\"];\n";
+          }
+          break; 
+        case " ":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\" \"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\" \"];\n";
+          }
+          break; 
+        default:
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=" + symbol + "];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=" + symbol + "];\n";
+          }
+          break;
+      };
     });
   });
 
@@ -98,6 +114,147 @@ export const drawGraphDFA = (nfa) => {
 };
 
 export const drawGraph = (nfa) => {
+  let dotStr = "digraph fsm {\n";
+  dotStr += "rankdir=LR;\n";
+  dotStr += 'size="8,5";\n';
+  dotStr += "node [shape = point]; INITIAL_STATE\n";
+  dotStr += "node [shape = doublecircle]; " + nfa.finalState.label + ";\n";
+  dotStr += "node [shape = circle];\n";
+  dotStr += "INITIAL_STATE -> " + nfa.initialState.label + ";\n";
+
+  nfa.transitions.forEach((nextStates, state) => {
+    nextStates.forEach((destinies, symbol) => {
+      switch (symbol){
+        case "+":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#43;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#43;\"];\n";
+          }
+          break;
+        case "*":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#42;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#42;\"];\n";
+          }
+          break;
+        case ".":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#46;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#46;\"];\n";
+          }
+          break;  
+        case ";":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#59;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#59;\"];\n";
+          }
+          break;  
+        case "|":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#124;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#124;\"];\n";
+          }
+          break; 
+        case "(":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#40;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#40;\"];\n";
+          }
+          break; 
+        case ")":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#41;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#41;\"];\n";
+          }
+          break; 
+        case " ":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\" \"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\" \"];\n";
+          }
+          break;
+          case "\\":
+            if (destinies instanceof Array) {
+              destinies.forEach((s) => {
+                dotStr += "" + state + " -> " + s + " [label=\"&#92;\"];\n";
+              });
+            } else {
+              dotStr +=
+                "" + state + " -> " + destinies + " [label=\"&#92;\"];\n";
+            }
+            break; 
+        case "[":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#91;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#91;\"];\n";
+          }
+          break; 
+        case "]":
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=\"&#93;\"];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=\"&#93;\"];\n";
+          }
+          break; 
+        default:
+          if (destinies instanceof Array) {
+            destinies.forEach((s) => {
+              dotStr += "" + state + " -> " + s + " [label=" + symbol + "];\n";
+            });
+          } else {
+            dotStr +=
+              "" + state + " -> " + destinies + " [label=" + symbol + "];\n";
+          }
+          break;
+      };
+    });
+  });
+
+  dotStr += "}";
+
+  return dotStr;
+};
+
+export const drawGraphTokens = (nfa) => {
   let dotStr = "digraph fsm {\n";
   dotStr += "rankdir=LR;\n";
   dotStr += 'size="8,5";\n';
@@ -124,30 +281,61 @@ export const drawGraph = (nfa) => {
   return dotStr;
 };
 
-export const drawTree = (tree) =>{
+export const drawTreeTokens = (tree) =>{
   let counter = 0;
   let dotStr = "digraph tree {\n";
   dotStr += "rankdir=TB;\n";
   dotStr += 'size="8,5";\n';
   
-  [dotStr, counter] = drawTreeNode(tree.treeRoot,counter,dotStr);
+  [dotStr, counter] = drawTreeNodeTokens(tree.treeRoot,counter,dotStr);
   dotStr += "}";
   return dotStr;
 };
-function drawTreeNode(node, counter, string_graph){
-  if (node !== null){
-    // console.log(node.value)
-    string_graph+=counter+" [label=\""+node.value+"\"];\n";
+function drawTreeNodeTokens(node, counter, string_graph){
+  if (node !== null || node !== undefined){
+    // console.log(node.value.value)
+    string_graph+=counter+" [label=\""+node.value.value+"\"];\n";
     counter++;
     let copy_c = counter-1;
-    if (node.left !== null){
+    if (node.left !== null && node.left !== undefined ){
       string_graph += "" + copy_c+ " -> " + counter + ";\n";
-      [string_graph,counter] = drawTreeNode(node.left, counter, string_graph);
+      [string_graph,counter] = drawTreeNodeTokens(node.left, counter, string_graph);
     }
-    if (node.right !== null){
+    if (node.right !== null ){
       string_graph += "" + copy_c+ " -> " + counter + ";\n";
-      [string_graph,counter] = drawTreeNode(node.right, counter, string_graph);
+      [string_graph,counter] = drawTreeNodeTokens(node.right, counter, string_graph);
     }
   };
-  return [string_graph, counter]
+  return [string_graph, counter];
+};
+export const drawTreeTokensAscii = (tree) =>{
+  let counter = 0;
+  let dotStr = "digraph tree {\n";
+  dotStr += "rankdir=TB;\n";
+  dotStr += 'size="8,5";\n';
+  
+  [dotStr, counter] = drawTreeNodeTokensAscii(tree.treeRoot,counter,dotStr);
+  dotStr += "}";
+  return dotStr;
+};
+function drawTreeNodeTokensAscii(node, counter, string_graph){
+  if (node !== null || node !== undefined){
+    let val = node.value.value;
+    if (node.value.precedence < -1){
+      val = String.fromCharCode(node.value.value);
+    }
+    // console.log(node.value.value)
+    string_graph+=counter+` [label="${val}"];\n`;
+    counter++;
+    let copy_c = counter-1;
+    if (node.left !== null && node.left !== undefined ){
+      string_graph += "" + copy_c+ " -> " + counter + ";\n";
+      [string_graph,counter] = drawTreeNodeTokensAscii(node.left, counter, string_graph);
+    }
+    if (node.right !== null ){
+      string_graph += "" + copy_c+ " -> " + counter + ";\n";
+      [string_graph,counter] = drawTreeNodeTokensAscii(node.right, counter, string_graph);
+    }
+  };
+  return [string_graph, counter];
 };

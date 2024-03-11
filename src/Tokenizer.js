@@ -8,6 +8,7 @@ const TokenTypes = {
   EXPONENTIATION: "^",
   PARENTHESIS_LEFT: "(",
   PARENTHESIS_RIGHT: ")",
+  DEFINITION: "DEFINITION",
 };
 
 const TokenSpec = [
@@ -21,6 +22,7 @@ const TokenSpec = [
   [/^\^/, TokenTypes.EXPONENTIATION],
   [/^\(/, TokenTypes.PARENTHESIS_LEFT],
   [/^\)/, TokenTypes.PARENTHESIS_RIGHT],
+  [/^[a-zA-Z]+[0-9]*[a-zA-Z]/, Token.DEFINITION]
 ];
 
 export class Tokenizer {

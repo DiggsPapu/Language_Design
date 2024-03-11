@@ -1,15 +1,14 @@
-- (a*|b*)c
-- (b|b)*abb(a|b)*
-- (a|ϵ)b(a+)c?
-- (a|b)*a(a|b)(a|b)
-- b*ab?
-- b+abc+
-- ab*ab*
-- 0(0|1)*0
-- ((ϵ|0)1*)*
-- (0|1)*0(0|1)(0|1)
-- (00)*(11)*
-- (0|1)1*(0|1)
-- 0?(1|ϵ)?0*
-- ((1?)*)*
-- (01)*(10)*
+(* Lexer para Gramática No. 4 *)
+
+(* Introducir cualquier header aqui *)
+
+let delim = [' ''\t''\n']
+\(\* Introducir cualquier header aqui \*\)
+
+
+\\(\\* +(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9| )* +\\*\\)
+let +(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9| )+ *= *
+
+
+
+[ +('(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|0|1|2|3|4|5|6|7|8|9| )+' *)*]

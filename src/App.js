@@ -1,21 +1,16 @@
 import "./App.css";
 import React, { useState } from "react";
 import { Regex } from "./Regex";
-import { Thompson } from "./Thompson";
-// import { SyntaxTree } from "./SyntaxTree";
+import { ThompsonToken } from "./ThompsonToken";
 import { Graphviz } from "graphviz-react";
-import { generateDirectDFA, NFAToDFA, minimizeDFA, simulateNfa } from "./DFA";
-import { NFA } from "./NFA";
-import { State } from "./State";
+import { NFAToDFA, minimizeDFA } from "./DFA";
 import {
-  getByValue,
-  fixLabels,
   drawGraphDFA,
   drawGraph,
-  drawTree,
+  drawTreeTokens,
 } from "./drawFunctions";
-import * as trial from "./Trial";
 import { SyntaxTree } from "./SyntaxTree";
+import FileDrop from "./components/FileDrop";
 
 function App() {
   const [input, setInput] = useState("");
@@ -57,28 +52,27 @@ function App() {
   const handleClick = () => {
     const regex = new Regex(input);
     setPostfix(regex.postfix);
-    // const syntaxTree = new SyntaxTree(postfix);
-    
-    const thompson = new Thompson(regex.postfix);
-    setDotNFA(drawGraph(thompson.nfa));
-    const tree = regex.constructTree();
-    const ast = new SyntaxTree(tree[0], tree[1], regex, tree[2]);
-    const nfaToDfa = NFAToDFA(thompson.nfa);
-    const [dfaI, relations] = fixLabels(nfaToDfa);
-    setDotDFA(drawGraphDFA(dfaI));
-    const directDfa = ast.generateDirectDFA()
-    const dfaMinimized = minimizeDFA(dfaI);
+    const thompson1 = new ThompsonToken(regex.postfixTokenized);    
+    const tokenTree = regex.constructTokenTree();
+    const ast = new SyntaxTree(tokenTree[0], tokenTree[1], regex, tokenTree[2]);
+    const nfaToDfa = NFAToDFA(thompson1.nfa);
+    const dfaMinimized = minimizeDFA(nfaToDfa);    
+    setSintaxTree(ast);    
+    const directDfa = ast.generateDirectDFATokens()
     const directDFAMin = minimizeDFA(directDfa);
-    setDotMinDFA(drawGraphDFA(dfaMinimized));
-    setNfa(thompson.nfa);
-    setDfa(dfaI);
+    
+    setNfa(thompson1.nfa);
+    setDfa(nfaToDfa);
     setDfaMinimized(dfaMinimized);
     setDirectDfa(directDfa);
     setDirectDfaMin(directDFAMin);
     setDotDirDFA(drawGraphDFA(directDfa));
     setDotDirDFAMin(drawGraphDFA(directDFAMin));
-    setSintaxTree(ast);
-    setDotSintaxTree(drawTree(ast));
+    setDotSintaxTree(drawTreeTokens(ast));
+    setDotNFA(drawGraph(thompson1.nfa));
+    setDotDFA(drawGraphDFA(nfaToDfa));
+    setDotSintaxTree(drawTreeTokens(ast));
+    setDotMinDFA(drawGraphDFA(dfaMinimized));
   };
   
   const clickSimulate = () => {
@@ -127,12 +121,22 @@ function App() {
         </div>
         <div className="graph-container">
           <h2>NFA:</h2>
-          <Graphviz dot={dotNFA} />
+          <Graphviz dot={dotNFA}  options={{
+
+totalMemory: 33554432, // Set the desired total memory value
+allowMemoryGrowth: true, // Allow memory growth at runtime
+abortingMalloc: false,   // Disable aborting on malloc failure
+}}/>
           <p>Simulation:{outputNfaS}</p>
         </div>
         <div className="graph-container">
           <h2>DFA:</h2>
-          <Graphviz dot={dotDFA} />
+          <Graphviz dot={dotDFA}  options={{
+
+totalMemory: 33554432, // Set the desired total memory value
+allowMemoryGrowth: true, // Allow memory growth at runtime
+abortingMalloc: false,   // Disable aborting on malloc failure
+}}/>
           <p>Simulate:{outputDfaS}</p>
         </div>
         <div className="graph-container">
@@ -151,21 +155,16 @@ function App() {
         </div>
         <div className="graph-container">
           <h2>Min DIRECT DFA:</h2>
-          <Graphviz dot={dotDirDFAMin} />
+          <Graphviz dot={dotDirDFAMin} options={{
+
+            totalMemory: 33554432, // Set the desired total memory value
+            allowMemoryGrowth: true, // Allow memory growth at runtime
+            abortingMalloc: false,   // Disable aborting on malloc failure
+          }}/>
           <p>Simulate:{outputDfaDmin}</p>
         </div>
       </div>
-      {/* <hr />
-      <h1>Lab 3</h1>
-
-      <label for="yalex">Seleccione un archivo Yalex: </label>
-      <br />
-      <input type="file" id="yalex" name="yalex" accept=".txt, .yal"></input>
-      <br />
-      <button id="enter-yalex">aceptar</button>
-
-      <h2>Diagrama de transicion de estados:</h2>
-      <Graphviz dot={dotLex} /> */}
+      <FileDrop/>
     </div>
   );
 }
